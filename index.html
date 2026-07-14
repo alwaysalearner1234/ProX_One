@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StadiumOS AI - FIFA World Cup 2026 Operations & Experience</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Global Navigation Header -->
+      <header class="app-header">
+        <div class="header-logo">
+          <div class="logo-badge"><i class="fa-solid fa-trophy"></i></div>
+          <div class="logo-text">
+            <h1>Stadium<span>OS</span> <mark>AI</mark></h1>
+            <p>FIFA World Cup 2026™ Portal</p>
+          </div>
+        </div>
+
+        <div class="header-center">
+          <div class="role-selector-container">
+            <button id="btn-fan-mode" class="role-btn active" data-role="fan">
+              <i class="fa-solid fa-users"></i> Fan Hub
+            </button>
+            <button id="btn-staff-mode" class="role-btn" data-role="staff">
+              <i class="fa-solid fa-shield-halved"></i> Command Centre
+            </button>
+          </div>
+        </div>
+
+        <div class="header-stats">
+          <div class="stat-item">
+            <span class="stat-icon"><i class="fa-solid fa-location-dot"></i></span>
+            <div class="stat-info">
+              <span class="stat-val">MetLife Stadium</span>
+              <span class="stat-label">NY/NJ Host City</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon"><i class="fa-solid fa-cloud-sun"></i></span>
+            <div class="stat-info">
+              <span class="stat-val">78°F / 25°C</span>
+              <span class="stat-label">Clear Sky</span>
+            </div>
+          </div>
+          <div class="stat-item match-pulse">
+            <span class="pulse-dot"></span>
+            <div class="stat-info">
+              <span class="stat-val text-accent">USA v ENG</span>
+              <span class="stat-label">Live: 72' (1-1)</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        
+        <!-- ==================== FAN EXPERIENCE HUB ==================== -->
+        <section id="fan-hub-view" class="dashboard-grid active">
+          <!-- Left Panel: Chat AI & Live Info -->
+          <div class="grid-col-1">
+            
+            <!-- AI Multilingual Concierge Card -->
+            <div class="glass-card ai-concierge-card">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-solid fa-brain-circuit text-gradient-icon"></i>
+                  <div>
+                    <h3>AI Multilingual Assistant</h3>
+                    <p>GenAI Concierge & Instant Translator</p>
+                  </div>
+                </div>
+                <div class="lang-selector">
+                  <i class="fa-solid fa-language"></i>
+                  <select id="chat-lang-select">
+                    <option value="en">English (EN)</option>
+                    <option value="es">Español (ES)</option>
+                    <option value="fr">Français (FR)</option>
+                    <option value="pt">Português (PT)</option>
+                    <option value="de">Deutsch (DE)</option>
+                    <option value="ar">العربية (AR)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="chat-container">
+                <div class="chat-messages" id="chat-messages-box">
+                  <div class="message system-msg">
+                    <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div class="msg-text">
+                      Hello! I am your StadiumOS AI assistant. How can I help you navigate the stadium, check transit options, or view match details today?
+                    </div>
+                  </div>
+                </div>
+                <div class="chat-chips">
+                  <button class="chip-btn" data-query="Gate accessibility information ♿">♿ Gate Access</button>
+                  <button class="chip-btn" data-query="Sustainable transport & transit options 🌿">🌿 Eco Transit</button>
+                  <button class="chip-btn" data-query="Clear bag and water bottle policies 🔒">🔒 Bag Rules</button>
+                  <button class="chip-btn" data-query="Match schedule and live scores ⚽">⚽ Matches</button>
+                </div>
+                <div class="chat-input-wrapper">
+                  <input type="text" id="chat-user-input" placeholder="Ask about gates, accessibility, transit, rules..." autocomplete="off" />
+                  <button id="btn-chat-send" class="btn-primary-gradient">
+                    <i class="fa-solid fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Eco Transit & Carbon Footprint Card -->
+            <div class="glass-card eco-card">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-solid fa-seedling text-eco"></i>
+                  <div>
+                    <h3>Eco-Transit & Carbon Impact</h3>
+                    <p>Sustainable transportation tracking</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="transit-calculator">
+                  <label for="transit-select">Select your travel mode:</label>
+                  <div class="selector-group">
+                    <select id="transit-select">
+                      <option value="train">🚈 NJ Transit Meadowlands Rail</option>
+                      <option value="bus">🚌 Coach USA Express Bus</option>
+                      <option value="rideshare">🚗 Rideshare / Carpool</option>
+                      <option value="car">🚘 Private Vehicle (Single Occupancy)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="carbon-meter-wrapper">
+                  <div class="carbon-stats">
+                    <div class="stat-num">
+                      <span id="carbon-co2-val">0.12</span> <small>kg CO2</small>
+                    </div>
+                    <div class="stat-badge eco-badge" id="carbon-rating-badge">Eco-Friendly</div>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="carbon-progress" style="width: 10%;"></div>
+                  </div>
+                  <p class="sustainability-advice" id="carbon-advice">
+                    Reduces your carbon footprint by 85% compared to driving! Show your digital match ticket for free boarding on the NJ Transit train!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Panel: Interactive Stadium Map & Live Routing -->
+          <div class="grid-col-2">
+            
+            <!-- Stadium Map Navigation -->
+            <div class="glass-card map-card">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-solid fa-map-location-dot text-gradient-icon"></i>
+                  <div>
+                    <h3>Interactive Stadium Map</h3>
+                    <p>Live crowd heatmap & route optimization</p>
+                  </div>
+                </div>
+                <div class="map-controls">
+                  <button id="btn-toggle-heatmap" class="map-ctrl-btn active"><i class="fa-solid fa-fire"></i> Heatmap</button>
+                  <button id="btn-toggle-accessibility" class="map-ctrl-btn"><i class="fa-solid fa-universal-access"></i> Accessible Routes</button>
+                </div>
+              </div>
+              
+              <div class="card-body map-body">
+                <!-- SVG Stadium Blueprint Simulation -->
+                <div class="stadium-map-wrapper">
+                  <div class="map-overlay-tooltip" id="map-tooltip">Hover over gates for wait times</div>
+                  <div class="stadium-canvas-container" id="stadium-canvas-container">
+                    <!-- Dynamic SVG map will be rendered here by JS -->
+                  </div>
+                </div>
+
+                <!-- Gate Congestion Status Panel -->
+                <div class="gate-legend-grid">
+                  <div class="gate-legend-item optimal" data-gate="A">
+                    <div class="legend-color-dot"></div>
+                    <div class="legend-info">
+                      <strong>Gate A (North)</strong>
+                      <span>Wait Time: <em class="gate-wait" id="gate-wait-A">5m</em></span>
+                    </div>
+                  </div>
+                  <div class="gate-legend-item warning" data-gate="B">
+                    <div class="legend-color-dot"></div>
+                    <div class="legend-info">
+                      <strong>Gate B (East Rail)</strong>
+                      <span>Wait Time: <em class="gate-wait" id="gate-wait-B">18m</em></span>
+                    </div>
+                  </div>
+                  <div class="gate-legend-item optimal" data-gate="C">
+                    <div class="legend-color-dot"></div>
+                    <div class="legend-info">
+                      <strong>Gate C (South VIP)</strong>
+                      <span>Wait Time: <em class="gate-wait" id="gate-wait-C">2m</em></span>
+                    </div>
+                  </div>
+                  <div class="gate-legend-item danger" data-gate="D">
+                    <div class="legend-color-dot"></div>
+                    <div class="legend-info">
+                      <strong>Gate D (West Lots)</strong>
+                      <span>Wait Time: <em class="gate-wait" id="gate-wait-D">32m</em></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Digital Match Ticket & Quick Info -->
+            <div class="glass-card info-card">
+              <div class="card-body ticket-layout">
+                <div class="ticket-brand">
+                  <i class="fa-solid fa-ticket"></i>
+                  <span>DIGITAL PASS</span>
+                </div>
+                <div class="ticket-details">
+                  <div class="ticket-row">
+                    <div>
+                      <small>MATCH 24</small>
+                      <h4>USA vs England</h4>
+                    </div>
+                    <div class="text-right">
+                      <small>KICKOFF</small>
+                      <h4>20:00 EST</h4>
+                    </div>
+                  </div>
+                  <div class="ticket-row border-top">
+                    <div>
+                      <small>GATE ASSIGNED</small>
+                      <strong class="text-accent text-glow" id="ticket-assigned-gate">Gate C</strong>
+                    </div>
+                    <div>
+                      <small>SECTION</small>
+                      <strong>114</strong>
+                    </div>
+                    <div>
+                      <small>ROW / SEAT</small>
+                      <strong>12 / 18</strong>
+                    </div>
+                  </div>
+                  <div class="ticket-alert" id="ticket-gate-suggestion">
+                    <i class="fa-solid fa-wand-magic-sparkles text-glow"></i>
+                    <span><strong>AI Routing Match:</strong> Gate C wait is 2 mins. Parking lot E/F attendees are rerouted through Gate C.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================== ORGANIZER & STAFF COMMAND CENTRE ==================== -->
+        <section id="staff-view" class="dashboard-grid">
+          <!-- Left Panel: Incident Dashboard & Alarm Feed -->
+          <div class="grid-col-1">
+            
+            <!-- Operations Scorecard Statuses -->
+            <div class="stats-row-container">
+              <div class="small-stat-card">
+                <span class="stat-label">Total Attendance</span>
+                <h4 id="ops-attendance-val">68,420 / 82,500</h4>
+                <div class="progress-bar-container mini">
+                  <div class="progress-bar-fill" style="width: 83%; background: var(--primary-accent);"></div>
+                </div>
+              </div>
+              <div class="small-stat-card">
+                <span class="stat-label">Crowd Density Index</span>
+                <h4 id="ops-density-val">76% (High)</h4>
+                <div class="progress-bar-container mini">
+                  <div class="progress-bar-fill" id="ops-density-bar" style="width: 76%; background: var(--warning-color);"></div>
+                </div>
+              </div>
+              <div class="small-stat-card alert-state" id="ops-alert-card">
+                <span class="stat-label">Active Incidents</span>
+                <h4 id="ops-alert-count">2 Active</h4>
+                <div class="flash-indicator"></div>
+              </div>
+            </div>
+
+            <!-- Simulation Controller panel -->
+            <div class="glass-card control-card">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-solid fa-sliders text-gradient-icon"></i>
+                  <div>
+                    <h3>Operations Simulator & Controls</h3>
+                    <p>Trigger scenarios to test AI decision support</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="sim-buttons-grid">
+                  <button class="btn-outline-sim" id="btn-sim-crowd-spike">
+                    <i class="fa-solid fa-users-rays"></i> Simulate Gate D Congestion
+                  </button>
+                  <button class="btn-outline-sim" id="btn-sim-medical">
+                    <i class="fa-solid fa-briefcase-medical"></i> Simulate Sec 104 Emergency
+                  </button>
+                  <button class="btn-outline-sim" id="btn-sim-transit">
+                    <i class="fa-solid fa-train-slash"></i> Simulate Transit Station Delay
+                  </button>
+                  <button class="btn-outline-sim" id="btn-sim-lostchild">
+                    <i class="fa-solid fa-child-reaching"></i> Simulate Lost Child Gate A
+                  </button>
+                </div>
+
+                <div class="sensor-adjuster">
+                  <label for="sensor-density-slider">Simulated Stadium Crowd Capacity: <span id="density-slider-val">80%</span></label>
+                  <input type="range" id="sensor-density-slider" min="10" max="100" value="80" step="5">
+                </div>
+              </div>
+            </div>
+
+            <!-- Incident / Alert Log Feed -->
+            <div class="glass-card alerts-feed-card">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-solid fa-bell text-danger"></i>
+                  <div>
+                    <h3>Active Security & Crowd Alarms</h3>
+                    <p>IoT Sensors & CCTV Integrated Feed</p>
+                  </div>
+                </div>
+              </div>
+              <div class="alerts-feed-list" id="alerts-log-container">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Panel: AI Incident Intelligence Command Centre -->
+          <div class="grid-col-2">
+            
+            <!-- AI Command Dashboard -->
+            <div class="glass-card command-intelligence-card">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-solid fa-shield-cat text-gradient-icon"></i>
+                  <div>
+                    <h3>AI Decision Support & Emergency Action</h3>
+                    <p>GenAI SOP Synthesizer & Resource Orchestrator</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-body command-body">
+                <div id="no-active-incident" class="empty-state">
+                  <i class="fa-solid fa-circle-check text-success"></i>
+                  <h4>No Action Required</h4>
+                  <p>Select an active incident from the alarm log to generate an AI response strategy and coordinate staff dispatch.</p>
+                </div>
+
+                <div id="active-incident-details" style="display: none;">
+                  <div class="incident-header-badge">
+                    <div class="badge-row">
+                      <span class="severity-tag danger" id="active-severity">HIGH</span>
+                      <h4 id="active-incident-title">Crowd Congestion at Gate D</h4>
+                    </div>
+                    <p>Location: <strong id="active-location">Gate D Entrance</strong> | Detection: <em id="active-time">2 mins ago</em></p>
+                  </div>
+
+                  <!-- SOP List section -->
+                  <div class="sop-section">
+                    <h5><i class="fa-solid fa-circle-nodes"></i> AI Recommended Standard Operating Procedure (SOP)</h5>
+                    <ol class="sop-list" id="active-sop-list">
+                      <!-- Populated dynamically -->
+                    </ol>
+                  </div>
+
+                  <!-- Digital Signage/Announcement Section -->
+                  <div class="announcement-section">
+                    <h5><i class="fa-solid fa-bullhorn"></i> Proposed Multilingual Fan Broadcast</h5>
+                    <div class="announcement-box" id="active-announcement">
+                      <!-- Populated dynamically -->
+                    </div>
+                    <div class="announcement-controls">
+                      <button id="btn-broadcast-announcement" class="btn-action-small">
+                        <i class="fa-solid fa-tower-broadcast"></i> Broadcast to Fan Hub Screen
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Staff Instructions -->
+                  <div class="staff-directions-section">
+                    <h5><i class="fa-solid fa-users-gear"></i> AI Dispatch & Tactical Instructions</h5>
+                    <p id="active-staff-directions"></p>
+                  </div>
+
+                  <!-- Resource Dispatch Section -->
+                  <div class="resource-dispatch-section">
+                    <h5><i class="fa-solid fa-truck-medical"></i> Suggested Team Allocations</h5>
+                    <div id="active-resource-list" class="resource-tags-grid">
+                      <!-- Populated dynamically -->
+                    </div>
+                    <div class="dispatch-action-wrapper">
+                      <button id="btn-dispatch-teams" class="btn-primary-gradient w-100">
+                        <i class="fa-solid fa-circle-check"></i> Approve Plan & Dispatch Teams
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Volunteer & Field Resource Tracker -->
+            <div class="glass-card resources-card">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-solid fa-people-carry-box text-gradient-icon"></i>
+                  <div>
+                    <h3>Field Operations & Resource Status</h3>
+                    <p>Track stadium marshals and emergency response units</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <table class="resource-table">
+                  <thead>
+                    <tr>
+                      <th>Team ID</th>
+                      <th>Resource Type</th>
+                      <th>Current Assignment</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resource-table-body">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Global Footer -->
+      <footer class="app-footer">
+        <p>© FIFA World Cup 2026™ Stadium Operations. Enabled by StadiumOS AI Decision Platform.</p>
+        <div class="footer-links">
+          <span><i class="fa-solid fa-shield"></i> Secure Sandbox</span>
+          <span><i class="fa-solid fa-signal"></i> Operational Telemetry: Connected</span>
+        </div>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
