@@ -1,101 +1,103 @@
 # ProX One – AI-Powered Global Student Ecosystem Dashboard 🚀
 
-> **The Next-Generation Unified Platform for Students, Universities, Recruiters, and Global Tech Innovators.**
+> **The Next-Generation Unified Super-App for Students, Universities, Recruiters, and Global Tech Innovators.**
 
-[![GitHub Pages Deployment](https://img.shields.io/badge/GitHub-Pages-222222?logo=github&logoColor=white)](https://alwaysalearner1234.github.io/ProX_One/)
-[![Firebase Auth](https://img.shields.io/badge/Firebase-Auth-039BE5?logo=firebase&logoColor=white)](https://firebase.google.com/)
-[![Vite](https://img.shields.io/badge/Vite-8.1-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
----
-
-## 🌐 Live URLs & Previews
-
-- **GitHub Pages Live Deployment**: [https://alwaysalearner1234.github.io/ProX_One/](https://alwaysalearner1234.github.io/ProX_One/)
-- **Local Dev Server**: `http://localhost:5173/`
-- **Firebase Hosting URL**: [https://prox-one-student.web.app](https://prox-one-student.web.app) *(Requires 1-time `firebase login` CLI refresh below)*
+<p align="center">
+  <a href="https://alwaysalearner1234.github.io/ProX_One/"><img src="https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-222222?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Pages"></a>
+  <a href="https://prox-one-student.web.app"><img src="https://img.shields.io/badge/Firebase-Hosting-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase Hosting"></a>
+  <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-Authentication-039BE5?style=for-the-badge&logo=firebase&logoColor=white" alt="Firebase Auth"></a>
+  <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-8.1.4-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite"></a>
+  <a href="https://leafletjs.com/"><img src="https://img.shields.io/badge/Leaflet-Dark%20Map-10B981?style=for-the-badge&logo=leaflet&logoColor=white" alt="Leaflet"></a>
+</p>
 
 ---
 
-## 🔑 Why Firebase Hosting show an authentication error?
+## 🌐 Live URLs & Instant Previews
 
-If you see a Firebase 401 error when deploying, it means your local Firebase CLI OAuth session expired. Simply run:
-```bash
-firebase login
-firebase deploy --only hosting
-```
-This re-authenticates your CLI and instantly deploys `dist/` to `https://prox-one-student.web.app`!
+| Environment | Status | URL |
+| :--- | :--- | :--- |
+| **🌐 GitHub Pages Live App** | 🟢 **ACTIVE** | [https://alwaysalearner1234.github.io/ProX_One/](https://alwaysalearner1234.github.io/ProX_One/) |
+| **💻 Local Dev Server** | ⚡ **RUNNING** | [http://localhost:5173/](http://localhost:5173/) |
+| **🔥 Firebase Hosting** | 🟡 **CONFIGURED** | [https://prox-one-student.web.app](https://prox-one-student.web.app) |
+| **📦 GitHub Repository** | 📁 **MAIN** | [https://github.com/alwaysalearner1234/ProX_One](https://github.com/alwaysalearner1234/ProX_One) |
 
 ---
 
 ## 💡 What is ProX One?
 
-**ProX One** combines the absolute best features of **LinkedIn** *(professional networking)*, **GitHub** *(code & portfolios)*, **Discord** *(real-time student communities)*, **Coursera** *(certified learning academy)*, **Devpost** *(hackathons)*, **Internshala** *(internships & entry-level roles)*, and **GenAI Career Mentorship** into one unified, hyper-personalized super-app for students worldwide.
+**ProX One** is a next-generation luxury SaaS platform designed specifically for the global student technology ecosystem. It combines the strongest elements of 7 industry-leading platforms into one unified super-app:
 
-Built with an ultra-modern SaaS design aesthetic inspired by Apple, Linear, Stripe, Notion, Vercel, and Arc Browser, ProX One features deep space dark mode (`#0B0F19`), frosted glassmorphic panels (`backdrop-filter: blur(16px)`), glowing neon gradients (electric blue, neon purple, cyan, emerald), and an interactive HTML5 background particle canvas.
+- **LinkedIn**: Professional networking, student portfolios, verified recruiter connections.
+- **GitHub**: Project showcases, live commit heatmaps (1,840 commits), repository star metrics.
+- **Discord**: Real-time student developer rooms and specialized tech channels (AI/ML, Web Dev, Cyber, Robotics).
+- **Coursera**: Certified learning academy with progress trackers for AI Agents, Next.js 15, and System Design.
+- **Devpost**: Global hackathon portal ($250k+ prize pools, live countdown timers, team matchers).
+- **Internshala**: Verified internships and graduate tech roles at Google, OpenAI, Microsoft, NVIDIA, Meta, Apple, and Tesla.
+- **GenAI Career Mentorship**: Automated ATS resume diagnostics (96/100 score), mock technical interview simulator, and personalized career roadmaps.
 
 ---
 
-## 🔥 Key Feature Matrix
+## ✨ Design Aesthetic & System Architecture
 
-### 1. 🛡 Top Navigation & Global AI Search
-- **ProX One Brand Engine**: Glowing atomic icon with animated pulse effect.
-- **Global AI Search (⌘ K)**: Instant search overlay across hackathons, jobs, internships, courses, and members.
-- **Voice Search Integration**: Native browser Web Speech API voice synthesis and speech recognition visualizer.
-- **Firebase Auth Pill**: Real-time sign-in status indicator for Google SSO and Email authentication.
-- **Quick Action Bar**: Notifications badge (4 unread), Messages drawer, Calendar shortcut, Glowing AI Coach launcher, and Theme toggle.
+Inspired by **Apple, Linear, Stripe, Notion, Vercel, and Arc Browser**:
 
-### 2. 🧭 18 Active Navigation Views
-Every single sidebar item renders a dedicated, fully populated interactive view (0 blank pages):
-- 🏠 **Dashboard**: Primary hub featuring Hero 3D orbit, KPIs, AI Match cards, Leaflet map, portfolio suite, and community feed.
-- 🌍 **Discover**: Open-source repository & research paper explorer with live demo links and star counts.
-- 🎯 **Opportunities**: Unified feed of internships, research fellowships, startup grants, and hackathon challenges.
-- 🏆 **Hackathons**: Devpost Hackathons Hub with prize pool breakdown ($250k+), live countdown clocks, and team finder.
-- 💼 **Internships**: Verified tech roles at Google, OpenAI, Microsoft, NVIDIA, Meta, Apple, and Tesla with 1-click ATS application.
-- 💼 **Jobs**: Full-time graduate & remote software engineering positions for 2026 graduates.
-- 🎓 **Colleges**: Global university campus network (Stanford, MIT, Harvard, UC Berkeley, Oxford, ETH Zurich).
-- 📚 **Learning**: Coursera & ProX Learning Academy with progress trackers for AI Agents, Next.js 15, and System Design.
-- 📂 **Projects**: Student project portfolio showcase with live GitHub stats and recruiter view badges.
-- 🏅 **Certificates**: Blockchain-verified credentials from Stanford, Coursera, AWS, and Google Cloud with instant LinkedIn share.
-- 🤖 **AI Career Coach**: AI Diagnostic Studio, ATS resume scanner, and mock technical interview simulator.
-- 👥 **Communities**: Discord-style developer rooms for AI/ML, Web Dev, Cyber, Robotics, and Competitive Programming.
-- 💬 **Messages**: Recruiter and mentor direct inbox with interactive chat window.
-- 🎥 **Live Events**: Live streaming auditorium with viewer counters and tech talks.
-- 🗓 **Calendar**: Ecosystem deadline & interview schedule grid.
-- 📈 **Analytics**: Personal career telemetry, recruiter search visibility, and callback conversion rates.
-- ❤️ **Saved**: Bookmarked opportunities, projects, and courses.
-- ⚙ **Settings**: Account preferences, profile manager, and AI match sensitivity sliders.
+- **Deep Space Dark Canvas**: Rich base styling (`#0B0F19`) with dynamic HTML5 Canvas particle background.
+- **Multi-Layer Glassmorphism**: `backdrop-filter: blur(24px) saturate(180%)` frosted glass cards with 24px rounded corners.
+- **Neon Glow Palette**: Electric Blue (`#3B82F6`), Hyper Violet (`#8B5CF6`), Neon Cyan (`#06B6D4`), Mint Emerald (`#10B981`), Cyber Pink (`#EC4899`), Golden Amber (`#F59E0B`).
+- **3D Micro-Interactions**: Hover light-sweeps, smooth levitating 3D icon orbits, and glowing gradient borders.
 
-### 3. 🤖 Interactive AI Career Coach Studio
-- **Hero Speech Bubble Widget**: Real-time AI recommendations based on profile resume analysis.
-- **ATS Resume Diagnostics**: Instant 0–100 ATS compatibility breakdown (96/100) with key keyword density suggestions.
-- **Mock Technical Interview Simulator**: Interactive system design and algorithm interview practice.
+---
 
-### 4. 🗺 Nearby Opportunities Map
-- **Leaflet.js Dark Mode Map**: Centered on Silicon Valley / Stanford University with custom neon pin markers for nearby Hackathons, Tech Talks, Research Labs, Incubators, and Coworking spaces.
+## 🔥 Feature Comparison Matrix
 
-### 5. 🔐 Firebase Authentication Integration
-- **Google Single Sign-On (SSO)** & **Email/Password Auth** via Firebase Auth SDK v10.
-- **Real-Time State Listener (`onAuthStateChanged`)**: Automatically synchronizes authenticated user name, email, and avatar across top nav, hero welcome banner, and sidebar profile card.
+| Feature | Legacy Platforms | ProX One Super-App |
+| :--- | :---: | :---: |
+| **Unified Student Profile** | ❌ Fragmented | ✅ All-in-One (Code + Resume + Certs + Rank) |
+| **AI Career Guidance** | ❌ Basic / Static | ✅ Real-Time ATS Scanner & Mock Interview Simulator |
+| **Opportunities Map** | ❌ Text Lists Only | ✅ Dark Leaflet.js Map with Custom Neon Pins |
+| **Community & Chat** | ❌ Disconnected | ✅ Integrated Discord-style Dev Rooms |
+| **1-Click Apply with Verified ATS Resume** | ❌ Manual Forms | ✅ Instant 1-Click Recruiter Submissions |
+| **Design Quality** | ❌ Generic | ✅ Luxury SaaS Dark Glassmorphism |
+
+---
+
+## 🧭 18 Active Navigation Views (0 Blank Pages)
+
+Every single navigation item is fully populated with rich interactive components:
+
+1. 🏠 **Dashboard**: Primary hub with 3D AI orbit, KPIs, AI Match cards, Leaflet map, portfolio suite, and community feed.
+2. 🌍 **Discover**: Open-source repository & research paper explorer.
+3. 🎯 **Opportunities**: Unified feed of research fellowships, startup grants, and YC incubator programs.
+4. 🏆 **Hackathons**: Devpost Hackathons Hub with prize pool breakdown ($250k+), live countdown clocks, and team finder.
+5. 💼 **Internships**: Verified tech roles at top tech companies with 1-click ATS application.
+6. 💼 **Jobs**: Full-time graduate & remote software engineering positions for 2026 graduates.
+7. 🎓 **Colleges**: Global university campus network (Stanford, MIT, Harvard, UC Berkeley, Oxford, ETH Zurich).
+8. 📚 **Learning**: Coursera & ProX Learning Academy with module progress trackers.
+9. 📂 **Projects**: Student project portfolio showcase with live GitHub stats.
+10. 🏅 **Certificates**: Verified digital badges with instant LinkedIn share.
+11. 🤖 **AI Career Coach**: AI Diagnostic Studio, ATS resume scanner, and mock technical interview simulator.
+12. 👥 **Communities**: Discord-style developer rooms for AI/ML, Web Dev, Cyber, Robotics, and Competitive Programming.
+13. 💬 **Messages**: Recruiter and mentor direct inbox with interactive chat window.
+14. 🎥 **Live Events**: Live streaming auditorium with viewer counters and tech talks.
+15. 🗓 **Calendar**: Ecosystem deadline & interview schedule grid.
+16. 📈 **Analytics**: Personal career telemetry, recruiter search visibility, and callback conversion rates.
+17. ❤️ **Saved**: Bookmarked opportunities, projects, and courses.
+18. ⚙ **Settings**: Account preferences, profile manager, and AI match sensitivity sliders.
 
 ---
 
 ## 🛠 Technology Stack
 
-- **Core UI Engine**: HTML5, Vanilla JavaScript (ES Modules), CSS3 (Custom Glassmorphism Design System)
-- **Build Tool & Bundler**: [Vite 8.1](https://vitejs.dev/)
-- **Interactive Mapping**: [Leaflet.js](https://leafletjs.com/) with CartoDB Dark Matter Vector Tiles
-- **Authentication**: [Firebase Auth SDK v10](https://firebase.google.com/docs/auth)
-- **Deployment**: GitHub Pages & Firebase Hosting
-- **Typography & Icons**: Google Fonts (*Outfit* & *Plus Jakarta Sans*) + FontAwesome 6 Pro
+- **Frontend Engine**: HTML5, Vanilla JavaScript (ES Modules), Custom CSS3 Glassmorphism Engine
+- **Build Tool**: [Vite 8.1](https://vitejs.dev/)
+- **Mapping**: [Leaflet.js](https://leafletjs.com/) with CartoDB Dark Matter tiles
+- **Authentication**: [Firebase Auth SDK v10](https://firebase.google.com/) (Google SSO + Email/Password)
+- **Deployment**: [GitHub Pages](https://pages.github.com/) (via GitHub Actions workflow `.github/workflows/deploy.yml`) & [Firebase Hosting](https://firebase.google.com/docs/hosting)
+- **Typography & Icons**: Google Fonts (*Outfit* & *Plus Jakarta Sans*) + FontAwesome 6
 
 ---
 
 ## 🚀 Quick Start Guide
-
-### Prerequisites
-- Node.js `v18.0.0` or higher
-- `npm`
 
 ### 1. Clone & Install Dependencies
 ```bash
@@ -108,7 +110,7 @@ npm install
 ```bash
 npm run dev
 ```
-Open [http://localhost:5173/](http://localhost:5173/) in your browser.
+Open **[http://localhost:5173/](http://localhost:5173/)** in your browser.
 
 ### 3. Production Build
 ```bash
@@ -119,4 +121,10 @@ npm run build
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See `LICENSE` for details.
+
+---
+
+<p align="center">
+  Designed & Built with ❤️ for Global Student Innovators.
+</p>
