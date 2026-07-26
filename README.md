@@ -2,18 +2,29 @@
 
 > **The Next-Generation Unified Platform for Students, Universities, Recruiters, and Global Tech Innovators.**
 
-[![Firebase Hosting](https://img.shields.io/badge/Firebase-Hosting-FFCA28?logo=firebase&logoColor=black)](https://prox-one-student.web.app)
-[![Vite](https://img.shields.io/badge/Vite-8.1-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![GitHub Pages Deployment](https://img.shields.io/badge/GitHub-Pages-222222?logo=github&logoColor=white)](https://alwaysalearner1234.github.io/ProX_One/)
 [![Firebase Auth](https://img.shields.io/badge/Firebase-Auth-039BE5?logo=firebase&logoColor=white)](https://firebase.google.com/)
+[![Vite](https://img.shields.io/badge/Vite-8.1-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
 ## 🌐 Live URLs & Previews
 
-- **Live Firebase Hosting Deployment**: [https://prox-one-student.web.app](https://prox-one-student.web.app)
-- **Secondary Firebase URL**: [https://prox-one-student.firebaseapp.com](https://prox-one-student.firebaseapp.com)
+- **GitHub Pages Live Deployment**: [https://alwaysalearner1234.github.io/ProX_One/](https://alwaysalearner1234.github.io/ProX_One/)
 - **Local Dev Server**: `http://localhost:5173/`
+- **Firebase Hosting URL**: [https://prox-one-student.web.app](https://prox-one-student.web.app) *(Requires 1-time `firebase login` CLI refresh below)*
+
+---
+
+## 🔑 Why Firebase Hosting show an authentication error?
+
+If you see a Firebase 401 error when deploying, it means your local Firebase CLI OAuth session expired. Simply run:
+```bash
+firebase login
+firebase deploy --only hosting
+```
+This re-authenticates your CLI and instantly deploys `dist/` to `https://prox-one-student.web.app`!
 
 ---
 
@@ -75,7 +86,7 @@ Every single sidebar item renders a dedicated, fully populated interactive view 
 - **Build Tool & Bundler**: [Vite 8.1](https://vitejs.dev/)
 - **Interactive Mapping**: [Leaflet.js](https://leafletjs.com/) with CartoDB Dark Matter Vector Tiles
 - **Authentication**: [Firebase Auth SDK v10](https://firebase.google.com/docs/auth)
-- **Deployment**: [Firebase Hosting](https://firebase.google.com/docs/hosting)
+- **Deployment**: GitHub Pages & Firebase Hosting
 - **Typography & Icons**: Google Fonts (*Outfit* & *Plus Jakarta Sans*) + FontAwesome 6 Pro
 
 ---
@@ -84,7 +95,7 @@ Every single sidebar item renders a dedicated, fully populated interactive view 
 
 ### Prerequisites
 - Node.js `v18.0.0` or higher
-- `npm` or `uv` package manager
+- `npm`
 
 ### 1. Clone & Install Dependencies
 ```bash
@@ -106,46 +117,6 @@ npm run build
 
 ---
 
-## 📦 Project Structure
-
-```text
-ProX_One/
-├── dist/                   # Compiled production bundle
-├── public/
-│   ├── prox_hero_3d.jpg    # Generated 3D AI Ecosystem Visual Asset
-│   └── favicon.ico
-├── src/
-│   ├── firebase.js         # Firebase Auth configuration & SDK methods
-│   ├── main.js             # Navigation router, particle engine, map renderer & UI logic
-│   ├── mockData.js         # Ecosystem datasets (KPIs, hackathons, internships, pins)
-│   └── style.css           # Glassmorphism design tokens, keyframes & layout rules
-├── index.html              # Main Single-Page Application architecture
-├── firebase.json           # Firebase Hosting configuration & single-page rewrites
-├── .firebaserc             # Firebase target project mapping
-├── vite.config.js          # Vite bundler configuration
-└── README.md               # Documentation
-```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests to enhance ProX One.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-<p center>
-  Designed & Built with ❤️ for Global Student Innovators.
-</p>
