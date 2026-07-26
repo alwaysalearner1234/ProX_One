@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "prox-one-student",
     "public": "dist",
     "ignore": [
       "firebase.json",

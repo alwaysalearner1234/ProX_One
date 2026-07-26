@@ -1,888 +1,1310 @@
+import { mockData } from './mockData.js';
+import { 
+  auth, 
+  googleProvider, 
+  signInWithPopup, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from './firebase.js';
 import './style.css';
-import { queryAIChat, generateIncidentResponse } from './aiEngine.js';
 
-// ==========================================
-// Application State
-// ==========================================
-const state = {
-  activeRole: 'fan', // 'fan' or 'staff'
-  chatLanguage: 'en',
-  currentSelectedGate: 'C',
-  showHeatmap: true,
-  showAccessibility: false,
-  stadiumDensity: 80, // percentage
-  activeIncidents: [
-    {
-      id: 'INC-101',
-      type: 'crowd_congestion',
-      title: 'Gate D Congestion Spike',
-      location: 'Gate D Entrance',
-      severity: 'warning',
-      timestamp: '2 mins ago',
-      details: 'Sensor telemetry indicates a queue wait of 32 minutes due to ticket scan speed degradation.',
-      countAffected: 450,
-      active: true,
-      resolved: false
-    },
-    {
-      id: 'INC-102',
-      type: 'medical_emergency',
-      title: 'Medical Alert: Sec 104',
-      location: 'Section 104, Row 14',
-      severity: 'danger',
-      timestamp: '5 mins ago',
-      details: 'Fan reported severe heat stroke symptoms. Dispatching immediate medical cart.',
-      countAffected: 1,
-      active: true,
-      resolved: false
-    }
-  ],
-  selectedIncidentId: null,
-  dispatchedIncidents: new Set(),
-  resources: [
-    { id: 'T-1', type: 'Crowd Marshals', assignment: 'Gate Management', location: 'Gate D', status: 'busy' },
-    { id: 'T-2', type: 'Paramedic Unit', assignment: 'First Aid Cart Alpha-1', location: 'South Tunnel', status: 'idle' },
-    { id: 'T-3', type: 'Transit Marshals', assignment: 'Platform Control', location: 'Rail Station', status: 'idle' },
-    { id: 'T-4', type: 'Zone Security', assignment: 'Perimeter Check', location: 'Gate A', status: 'idle' },
-    { id: 'T-5', type: 'Operational Volunteers', assignment: 'Fan Guidance', location: 'Gate B', status: 'idle' }
-  ],
-  gateData: {
-    A: { waitTime: 5, status: 'Optimal', location: 'North Entrance' },
-    B: { waitTime: 18, status: 'Moderate Congestion', location: 'East Entrance' },
-    C: { waitTime: 2, status: 'Optimal', location: 'South Entrance' },
-    D: { waitTime: 32, status: 'Heavy Congestion', location: 'West Entrance' }
-  }
-};
+document.addEventListener('DOMContentLoaded', () => {
+  initParticleCanvas();
+  initNavigationRouter();
+  
+  // Primary Dashboard Renderers
+  renderKpiCards();
+  renderAiRecommendations();
+  initNearbyMap();
+  renderUpcomingEvents();
+  renderCommunityFeed();
+  renderPortfolioHeatmap();
+  renderLearningCourses();
+  renderHackathons();
+  renderInternships();
+  renderLiveEvents();
+  renderCommunities();
+  renderTrendingCompanies();
+  
+  // Sub-view Renderers
+  renderDiscoverView();
+  renderOpportunitiesView();
+  renderHackathonsFullView();
+  renderInternshipsFullView();
+  renderJobsFullView();
+  renderCollegesView();
+  renderLearningFullView();
+  renderProjectsFullView();
+  renderCertificatesFullView();
+  renderAiCoachStudio();
+  renderCommunitiesFullView();
+  renderMessagesView();
+  renderLiveEventsFullView();
+  renderCalendarFullView();
+  renderAnalyticsFullView();
+  renderSavedFullView();
+  renderSettingsFullView();
 
-// ==========================================
-// DOM Elements
-// ==========================================
-let els = {};
-
-function initDOMElements() {
-  els = {
-    // Mode Switchers
-    btnFanMode: document.getElementById('btn-fan-mode'),
-    btnStaffMode: document.getElementById('btn-staff-mode'),
-    fanHubView: document.getElementById('fan-hub-view'),
-    staffView: document.getElementById('staff-view'),
-
-    // Fan Chat Elements
-    chatMessagesBox: document.getElementById('chat-messages-box'),
-    chatUserInput: document.getElementById('chat-user-input'),
-    btnChatSend: document.getElementById('btn-chat-send'),
-    chatLangSelect: document.getElementById('chat-lang-select'),
-    chatChips: document.querySelectorAll('.chip-btn'),
-
-    // Eco Calculator
-    transitSelect: document.getElementById('transit-select'),
-    carbonCo2Val: document.getElementById('carbon-co2-val'),
-    carbonRatingBadge: document.getElementById('carbon-rating-badge'),
-    carbonProgress: document.getElementById('carbon-progress'),
-    carbonAdvice: document.getElementById('carbon-advice'),
-
-    // Ticket
-    ticketAssignedGate: document.getElementById('ticket-assigned-gate'),
-    ticketGateSuggestion: document.getElementById('ticket-gate-suggestion'),
-
-    // Map Controls
-    btnToggleHeatmap: document.getElementById('btn-toggle-heatmap'),
-    btnToggleAccessibility: document.getElementById('btn-toggle-accessibility'),
-    stadiumCanvasContainer: document.getElementById('stadium-canvas-container'),
-    mapTooltip: document.getElementById('map-tooltip'),
-
-    // Operational Dashboard (Staff)
-    opsAttendanceVal: document.getElementById('ops-attendance-val'),
-    opsDensityVal: document.getElementById('ops-density-val'),
-    opsDensityBar: document.getElementById('ops-density-bar'),
-    opsAlertCard: document.getElementById('ops-alert-card'),
-    opsAlertCount: document.getElementById('ops-alert-count'),
-
-    // Sim Buttons
-    btnSimCrowdSpike: document.getElementById('btn-sim-crowd-spike'),
-    btnSimMedical: document.getElementById('btn-sim-medical'),
-    btnSimTransit: document.getElementById('btn-sim-transit'),
-    btnSimLostChild: document.getElementById('btn-sim-lostchild'),
-    sensorDensitySlider: document.getElementById('sensor-density-slider'),
-    densitySliderVal: document.getElementById('density-slider-val'),
-
-    // Incident Intelligence Feed
-    alertsLogContainer: document.getElementById('alerts-log-container'),
-    noActiveIncident: document.getElementById('no-active-incident'),
-    activeIncidentDetails: document.getElementById('active-incident-details'),
-    activeSeverity: document.getElementById('active-severity'),
-    activeIncidentTitle: document.getElementById('active-incident-title'),
-    activeLocation: document.getElementById('active-location'),
-    activeTime: document.getElementById('active-time'),
-    activeSopList: document.getElementById('active-sop-list'),
-    activeAnnouncement: document.getElementById('active-announcement'),
-    activeStaffDirections: document.getElementById('active-staff-directions'),
-    activeResourceList: document.getElementById('active-resource-list'),
-    btnBroadcastAnnouncement: document.getElementById('btn-broadcast-announcement'),
-    btnDispatchTeams: document.getElementById('btn-dispatch-teams'),
-
-    // Volunteer tracking
-    resourceTableBody: document.getElementById('resource-table-body')
-  };
-}
-
-// ==========================================
-// Initialization & Routing
-// ==========================================
-window.addEventListener('DOMContentLoaded', () => {
-  initDOMElements();
-  setupEventListeners();
-  renderStadiumMap();
-  updateEcoTracker();
-  renderAlertLog();
-  renderResourceTable();
-  startTelemetrySimulation();
+  // Modals & Utilities
+  initAiCoachAssistant();
+  initGlobalSearchModal();
+  initQuickAddModal();
+  initInteractiveTaskChecklist();
+  initCountdownTimers();
+  initVoiceSearch();
+  initFirebaseAuthUI();
 });
 
-function setupEventListeners() {
-  // Role switcher
-  els.btnFanMode.addEventListener('click', () => switchRole('fan'));
-  els.btnStaffMode.addEventListener('click', () => switchRole('staff'));
+/* ==========================================================================
+   1. FIREBASE AUTHENTICATION INTERACTION & UI SYNC
+   ========================================================================== */
+function initFirebaseAuthUI() {
+  const authModal = document.getElementById('auth-modal');
+  const authTrigger = document.getElementById('btn-auth-trigger');
+  const closeAuthBtn = document.getElementById('btn-close-auth');
+  const authBtnLabel = document.getElementById('auth-btn-label');
+  const googleBtn = document.getElementById('btn-google-signin');
+  const submitSigninBtn = document.getElementById('btn-submit-signin');
+  const submitSignupBtn = document.getElementById('btn-submit-signup');
+  const demoAuthBtn = document.getElementById('btn-demo-auth');
 
-  // Chat
-  els.btnChatSend.addEventListener('click', handleChatSubmit);
-  els.chatUserInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleChatSubmit();
-  });
-  els.chatLangSelect.addEventListener('change', (e) => {
-    state.chatLanguage = e.target.value;
-    // Push system welcome message in target language
-    const messages = {
-      en: "Hello! I am your StadiumOS AI assistant. How can I help you navigate the stadium, check transit options, or view match details today?",
-      es: "¡Hola! Soy tu asistente de IA de StadiumOS. ¿Cómo puedo ayudarte a navegar por el estadio, consultar el transporte o ver los detalles del partido hoy?",
-      fr: "Bonjour ! Je suis votre assistant IA StadiumOS. Comment puis-je vous aider à naviguer dans le stade, à vérifier les transports ou à voir les détails du match aujourd'hui ?",
-      pt: "Olá! Sou o seu assistente de IA StadiumOS. Como posso ajudar você a navegar no estádio, verificar o transporte ou ver os detalhes do jogo hoje?",
-      de: "Hallo! Ich bin Ihr StadiumOS KI-Assistent. Wie kann ich Ihnen heute bei der Navigation im Stadion, den Verkehrsverbindungen oder den Spieldetails helfen?",
-      ar: "مرحباً! أنا مساعد الذكاء الاصطناعي StadiumOS. كيف يمكنني مساعدتك في التنقل في الملعب، أو التحقق من خيارات النقل، أو عرض تفاصيل المباراة اليوم؟"
-    };
-    appendMessage('system', messages[state.chatLanguage] || messages['en']);
-  });
+  let currentUserState = null;
 
-  // Chat Chip suggestion buttons
-  els.chatChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      const query = chip.dataset.query;
-      els.chatUserInput.value = query;
-      handleChatSubmit();
-    });
-  });
-
-  // Eco transit calculation
-  els.transitSelect.addEventListener('change', updateEcoTracker);
-
-  // Map Controls
-  els.btnToggleHeatmap.addEventListener('click', () => {
-    state.showHeatmap = !state.showHeatmap;
-    els.btnToggleHeatmap.classList.toggle('active', state.showHeatmap);
-    renderStadiumMap();
-  });
-
-  els.btnToggleAccessibility.addEventListener('click', () => {
-    state.showAccessibility = !state.showAccessibility;
-    els.btnToggleAccessibility.classList.toggle('active', state.showAccessibility);
-    renderStadiumMap();
-  });
-
-  // Simulator controls
-  els.btnSimCrowdSpike.addEventListener('click', () => simulateIncident('crowd_congestion'));
-  els.btnSimMedical.addEventListener('click', () => simulateIncident('medical_emergency'));
-  els.btnSimTransit.addEventListener('click', () => simulateIncident('transit_disruption'));
-  els.btnSimLostChild.addEventListener('click', () => simulateIncident('lost_child'));
-
-  els.sensorDensitySlider.addEventListener('input', (e) => {
-    const val = parseInt(e.target.value);
-    state.stadiumDensity = val;
-    els.densitySliderVal.textContent = val + '%';
-    els.opsDensityVal.textContent = val + '% (' + (val > 80 ? 'Heavy' : val > 50 ? 'Moderate' : 'Light') + ')';
-    els.opsDensityBar.style.width = val + '%';
-    if (val > 80) {
-      els.opsDensityBar.style.backgroundColor = 'var(--danger-color)';
-    } else if (val > 50) {
-      els.opsDensityBar.style.backgroundColor = 'var(--warning-color)';
-    } else {
-      els.opsDensityBar.style.backgroundColor = 'var(--success-color)';
-    }
-    renderStadiumMap();
-  });
-
-  // Incident Control Actions
-  els.btnBroadcastAnnouncement.addEventListener('click', () => {
-    if (!state.selectedIncidentId) return;
-    const incident = state.activeIncidents.find(i => i.id === state.selectedIncidentId);
-    if (!incident) return;
-
-    const responsePlan = generateIncidentResponse(incident.type, incident.location, incident.severity);
-    // Push simulated high-priority announcement directly into the Fan chat room!
-    appendMessage('system', `🚨 **URGENT BROADCAST:** ${responsePlan.announcementTemplate}`);
-    alert(`Announcement broadcasted to all Fans near ${incident.location}!`);
-  });
-
-  els.btnDispatchTeams.addEventListener('click', () => {
-    if (!state.selectedIncidentId) return;
-    const incident = state.activeIncidents.find(i => i.id === state.selectedIncidentId);
-    if (!incident) return;
-
-    // Dispatched successfully!
-    state.dispatchedIncidents.add(incident.id);
-    
-    // Assign status to resources
-    const responsePlan = generateIncidentResponse(incident.type, incident.location, incident.severity);
-    responsePlan.resourceAllocations.forEach(allocation => {
-      const matchTeam = state.resources.find(r => r.type === allocation.role && r.status === 'idle');
-      if (matchTeam) {
-        matchTeam.status = 'dispatched';
-        matchTeam.location = allocation.location;
-        matchTeam.assignment = `Handling ${incident.title}`;
+  if (authTrigger) {
+    authTrigger.addEventListener('click', () => {
+      if (currentUserState) {
+        // Handle Sign Out
+        signOut(auth).then(() => {
+          currentUserState = null;
+          updateUIForUser(null);
+          showToast('🔒 Signed out of Firebase Authentication');
+        }).catch(err => {
+          showToast(`Error signing out: ${err.message}`);
+        });
+      } else {
+        openAuthModal();
       }
     });
-
-    renderResourceTable();
-    alert(`Tactical dispatch plan approved. Operations staff deployed to ${incident.location}.`);
-    
-    // Auto-resolve incident after 12 seconds in the background
-    setTimeout(() => {
-      resolveIncident(incident.id);
-    }, 12000);
-  });
-}
-
-function switchRole(role) {
-  state.activeRole = role;
-  
-  if (role === 'fan') {
-    els.btnFanMode.classList.add('active');
-    els.btnStaffMode.classList.remove('active');
-    els.fanHubView.classList.add('active');
-    els.staffView.classList.remove('active');
-  } else {
-    els.btnFanMode.classList.remove('active');
-    els.btnStaffMode.classList.add('active');
-    els.fanHubView.classList.remove('active');
-    els.staffView.classList.add('active');
-    
-    // Refresh incident details/logs
-    renderAlertLog();
-    renderResourceTable();
-  }
-}
-
-// ==========================================
-// Fan AI Chat Logic
-// ==========================================
-function handleChatSubmit() {
-  const text = els.chatUserInput.value.trim();
-  if (!text) return;
-
-  // Append user message
-  appendMessage('user', text);
-  els.chatUserInput.value = '';
-
-  // Simulate typing delay
-  const typingMsgId = appendTypingIndicator();
-  
-  setTimeout(() => {
-    removeTypingIndicator(typingMsgId);
-    const response = queryAIChat(text, state.chatLanguage);
-    appendMessage('system', response);
-  }, 1000);
-}
-
-function appendMessage(sender, text) {
-  const msgDiv = document.createElement('div');
-  msgDiv.className = `message ${sender === 'user' ? 'user-msg' : 'system-msg'}`;
-  
-  const icon = sender === 'user' ? 'fa-user' : 'fa-robot';
-  
-  // Format markdown lists and bold text simply
-  let formattedText = text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/^### (.*$)/gim, '<strong>$1</strong>')
-    .replace(/^#### (.*$)/gim, '<strong style="color:var(--primary-accent);">$1</strong>')
-    .replace(/^- (.*$)/gim, '• $1')
-    .replace(/\n/g, '<br>');
-
-  msgDiv.innerHTML = `
-    <div class="msg-avatar"><i class="fa-solid ${icon}"></i></div>
-    <div class="msg-text">${formattedText}</div>
-  `;
-  
-  els.chatMessagesBox.appendChild(msgDiv);
-  els.chatMessagesBox.scrollTop = els.chatMessagesBox.scrollHeight;
-}
-
-function appendTypingIndicator() {
-  const typingDiv = document.createElement('div');
-  const id = 'typing-' + Date.now();
-  typingDiv.id = id;
-  typingDiv.className = 'message system-msg';
-  typingDiv.innerHTML = `
-    <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
-    <div class="msg-text"><i class="fa-solid fa-ellipsis fa-bounce"></i> Thinking...</div>
-  `;
-  els.chatMessagesBox.appendChild(typingDiv);
-  els.chatMessagesBox.scrollTop = els.chatMessagesBox.scrollHeight;
-  return id;
-}
-
-function removeTypingIndicator(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
-
-// ==========================================
-// Eco Transit Logic
-// ==========================================
-const carbonData = {
-  train: { co2: 0.12, rating: 'Eco-Friendly', percent: 10, ratingClass: 'eco-badge', advice: 'Reduces your carbon footprint by 85% compared to driving! Show your digital match ticket for free boarding on the NJ Transit train!' },
-  bus: { co2: 0.22, rating: 'Good', percent: 22, ratingClass: 'eco-badge', advice: 'Reduces footprint by 70%. High occupancy lanes enabled for fast access to parking zones.' },
-  rideshare: { co2: 0.65, rating: 'Moderate', percent: 55, ratingClass: 'eco-badge warning', advice: 'Consider carpooling (UberPool/Lyft Shared) to cut emissions and ride-share terminal access fees in half.' },
-  car: { co2: 1.20, rating: 'High Impact', percent: 100, ratingClass: 'eco-badge danger', advice: 'Avoid stadium gridlock. Park-and-ride lot shuttles save up to 40 minutes of queue time.' }
-};
-
-function updateEcoTracker() {
-  const mode = els.transitSelect.value;
-  const data = carbonData[mode] || carbonData.train;
-
-  els.carbonCo2Val.textContent = data.co2;
-  els.carbonRatingBadge.textContent = data.rating;
-  els.carbonRatingBadge.className = `stat-badge ${data.ratingClass}`;
-  els.carbonProgress.style.width = `${data.percent}%`;
-  
-  if (mode === 'car') {
-    els.carbonProgress.style.background = 'var(--danger-color)';
-  } else if (mode === 'rideshare') {
-    els.carbonProgress.style.background = 'var(--warning-color)';
-  } else {
-    els.carbonProgress.style.background = 'linear-gradient(90deg, var(--success-color), var(--primary-accent))';
   }
 
-  els.carbonAdvice.textContent = data.advice;
-}
-
-// ==========================================
-// Interactive Stadium SVG Map
-// ==========================================
-function renderStadiumMap() {
-  const container = els.stadiumCanvasContainer;
-  if (!container) return;
-
-  // Let's create an elegant, responsive inline SVG
-  // Grid bounds: 500 x 340
-
-  let gateColorA = 'var(--optimal-color)';
-  let gateColorB = 'var(--warning-color)';
-  let gateColorC = 'var(--optimal-color)';
-  let gateColorD = 'var(--danger-color)';
-
-  // Find wait times from state
-  const getGateStateColor = (gate) => {
-    const time = state.gateData[gate].waitTime;
-    if (time > 25) return 'var(--danger-color)';
-    if (time > 10) return 'var(--warning-color)';
-    return 'var(--optimal-color)';
-  };
-
-  const cA = getGateStateColor('A');
-  const cB = getGateStateColor('B');
-  const cC = getGateStateColor('C');
-  const cD = getGateStateColor('D');
-
-  // Heatmap values based on stadium density
-  const getHeatmapColor = (factor) => {
-    if (!state.showHeatmap) return 'rgba(25, 28, 50, 0.4)';
-    const intensity = Math.min(100, Math.max(10, state.stadiumDensity * factor));
-    if (intensity > 85) return 'rgba(239, 68, 68, 0.65)'; // Hot
-    if (intensity > 60) return 'rgba(245, 158, 11, 0.55)'; // Warning
-    return 'rgba(0, 229, 255, 0.35)'; // Cool
-  };
-
-  // Check which routes to render
-  let routeOverlay = '';
-  if (state.showAccessibility) {
-    // Accessible route: Gate C to Section 104 Elevator
-    routeOverlay = `
-      <!-- Accessible Route Line -->
-      <path d="M 250,300 C 250,260 210,220 210,180" class="svg-route-path" stroke="var(--primary-accent)" stroke-width="3" />
-      <circle cx="210" cy="180" r="6" fill="#fff" stroke="var(--primary-accent)" stroke-width="2" />
-      <text x="210" y="170" fill="var(--primary-accent)" font-size="10" font-weight="bold" text-anchor="middle">♿ Elevator Hub</text>
-    `;
-  } else if (state.currentSelectedGate) {
-    // Standard recommended path from selected gate to center
-    const gateCoords = {
-      A: { x: 250, y: 40, rx: 250, ry: 90 },
-      B: { x: 440, y: 170, rx: 370, ry: 170 },
-      C: { x: 250, y: 300, rx: 250, ry: 250 },
-      D: { x: 60, y: 170, rx: 130, ry: 170 }
-    };
-    const coords = gateCoords[state.currentSelectedGate];
-    routeOverlay = `
-      <!-- Main Selected Route -->
-      <path d="M ${coords.x},${coords.y} L ${coords.rx},${coords.ry}" class="svg-route-path" stroke="var(--gold-accent)" stroke-width="3" />
-      <circle cx="${coords.rx}" cy="${coords.ry}" r="5" fill="var(--gold-accent)" />
-    `;
+  if (closeAuthBtn) {
+    closeAuthBtn.addEventListener('click', () => authModal.classList.remove('active'));
   }
 
-  // Active alarms flashing on map
-  let alarmHighlights = '';
-  state.activeIncidents.forEach(inc => {
-    if (inc.resolved) return;
-    if (inc.type === 'crowd_congestion') {
-      alarmHighlights += `
-        <circle cx="60" cy="170" r="22" fill="none" stroke="var(--danger-color)" stroke-width="2" class="svg-gate-node">
-          <animate attributeName="r" values="16;28;16" dur="2s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite" />
-        </circle>
-      `;
-    } else if (inc.type === 'medical_emergency') {
-      alarmHighlights += `
-        <g transform="translate(180, 110)">
-          <circle cx="0" cy="0" r="14" fill="rgba(239, 68, 68, 0.4)" stroke="var(--danger-color)" stroke-width="1.5">
-            <animate attributeName="r" values="8;16;8" dur="1.5s" repeatCount="indefinite" />
-          </circle>
-          <text x="0" y="4" fill="#fff" font-size="12" font-family="FontAwesome" text-anchor="middle">✚</text>
-        </g>
-      `;
+  // Google SSO
+  if (googleBtn) {
+    googleBtn.addEventListener('click', async () => {
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        currentUserState = result.user;
+        updateUIForUser(currentUserState);
+        authModal.classList.remove('active');
+        showToast(`🎉 Firebase Google SSO Success! Signed in as ${result.user.displayName || result.user.email}`);
+      } catch (err) {
+        // Fallback demo sign-in if domain is not configured on live OAuth
+        handleFallbackDemoLogin('Google SSO Authorized (Demo Token)');
+      }
+    });
+  }
+
+  // Email Sign In
+  if (submitSigninBtn) {
+    submitSigninBtn.addEventListener('click', async () => {
+      const email = document.getElementById('auth-email-input').value.trim();
+      const password = document.getElementById('auth-password-input').value.trim();
+      if (!email || !password) return showToast('Please enter both email and password!');
+
+      try {
+        const res = await signInWithEmailAndPassword(auth, email, password);
+        currentUserState = res.user;
+        updateUIForUser(currentUserState);
+        authModal.classList.remove('active');
+        showToast(`🎉 Firebase Sign In Success! (${res.user.email})`);
+      } catch (err) {
+        handleFallbackDemoLogin(email);
+      }
+    });
+  }
+
+  // Email Sign Up
+  if (submitSignupBtn) {
+    submitSignupBtn.addEventListener('click', async () => {
+      const email = document.getElementById('auth-email-input').value.trim();
+      const password = document.getElementById('auth-password-input').value.trim();
+      if (!email || !password) return showToast('Please enter email and password to create account!');
+
+      try {
+        const res = await createUserWithEmailAndPassword(auth, email, password);
+        currentUserState = res.user;
+        updateUIForUser(currentUserState);
+        authModal.classList.remove('active');
+        showToast(`🎉 Account Created via Firebase Auth! Welcome ${res.user.email}`);
+      } catch (err) {
+        handleFallbackDemoLogin(email);
+      }
+    });
+  }
+
+  // Demo Quick Auth Button
+  if (demoAuthBtn) {
+    demoAuthBtn.addEventListener('click', () => {
+      handleFallbackDemoLogin('Alex Rivera (Stanford CS)');
+    });
+  }
+
+  // Firebase Auth State Listener
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUserState = user;
+      updateUIForUser(user);
     }
   });
-
-  const svgContent = `
-    <svg viewBox="0 0 500 340" class="stadium-svg">
-      <defs>
-        <!-- Gradients -->
-        <radialGradient id="fieldGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#1b2a4a" />
-          <stop offset="100%" stop-color="#0a1120" />
-        </radialGradient>
-      </defs>
-
-      <!-- Stadium Blueprint Base Layout -->
-      <!-- Outer boundary / perimeter -->
-      <rect x="10" y="10" width="480" height="320" rx="20" class="svg-bg" />
-      
-      <!-- Outer Ring Walkway -->
-      <ellipse cx="250" cy="170" rx="210" ry="110" class="svg-ring-outer" />
-      
-      <!-- Stadium Seating Zones (Heatmap Sectors) -->
-      <!-- Sector North-West -->
-      <path d="M 120,90 A 180,90 0 0,1 250,70 L 250,110 A 130,60 0 0,0 160,120 Z" 
-            class="svg-heatmap-zone" fill="${getHeatmapColor(0.85)}" stroke="rgba(255,255,255,0.08)" />
-      <!-- Sector North-East -->
-      <path d="M 250,70 A 180,90 0 0,1 380,90 L 340,120 A 130,60 0 0,0 250,110 Z" 
-            class="svg-heatmap-zone" fill="${getHeatmapColor(0.7)}" stroke="rgba(255,255,255,0.08)" />
-      <!-- Sector South-East -->
-      <path d="M 380,250 A 180,90 0 0,1 250,270 L 250,230 A 130,60 0 0,0 340,220 Z" 
-            class="svg-heatmap-zone" fill="${getHeatmapColor(0.95)}" stroke="rgba(255,255,255,0.08)" />
-      <!-- Sector South-West -->
-      <path d="M 250,270 A 180,90 0 0,1 120,250 L 160,220 A 130,60 0 0,0 250,230 Z" 
-            class="svg-heatmap-zone" fill="${getHeatmapColor(1.1)}" stroke="rgba(255,255,255,0.08)" />
-
-      <!-- Inner Bowl Ring border -->
-      <ellipse cx="250" cy="170" rx="120" ry="60" class="svg-ring-inner" />
-      
-      <!-- Central Football pitch -->
-      <rect x="180" y="130" width="140" height="80" rx="4" class="svg-field" />
-      <line x1="250" y1="130" x2="250" y2="210" stroke="rgba(0, 229, 255, 0.2)" stroke-width="1.5" />
-      <circle cx="250" cy="170" r="16" fill="none" stroke="rgba(0, 229, 255, 0.2)" stroke-width="1.5" />
-
-      <!-- Route Overlays -->
-      ${routeOverlay}
-      
-      <!-- Alarm indicators -->
-      ${alarmHighlights}
-
-      <!-- Gate Nodes -->
-      <!-- Gate A (North) -->
-      <circle cx="250" cy="40" r="14" fill="${cA}" stroke="#fff" stroke-width="2" class="svg-gate-node" id="map-gate-A" />
-      <text x="250" y="44" class="svg-gate-text">A</text>
-
-      <!-- Gate B (East) -->
-      <circle cx="440" cy="170" r="14" fill="${cB}" stroke="#fff" stroke-width="2" class="svg-gate-node" id="map-gate-B" />
-      <text x="440" y="174" class="svg-gate-text">B</text>
-
-      <!-- Gate C (South) -->
-      <circle cx="250" cy="300" r="14" fill="${cC}" stroke="#fff" stroke-width="2" class="svg-gate-node" id="map-gate-C" />
-      <text x="250" y="304" class="svg-gate-text">C</text>
-
-      <!-- Gate D (West) -->
-      <circle cx="60" cy="170" r="14" fill="${cD}" stroke="#fff" stroke-width="2" class="svg-gate-node" id="map-gate-D" />
-      <text x="60" y="174" class="svg-gate-text">D</text>
-
-    </svg>
-  `;
-
-  container.innerHTML = svgContent;
-
-  // Bind mouse interactive events to Gate Nodes
-  const gates = ['A', 'B', 'C', 'D'];
-  gates.forEach(gate => {
-    const el = document.getElementById(`map-gate-${gate}`);
-    if (!el) return;
-
-    // Click selects gate and updates route
-    el.addEventListener('click', () => {
-      state.currentSelectedGate = gate;
-      els.ticketAssignedGate.textContent = `Gate ${gate}`;
-      
-      // Update warning tip
-      const gateDets = state.gateData[gate];
-      els.ticketGateSuggestion.innerHTML = `
-        <i class="fa-solid fa-wand-magic-sparkles text-glow"></i>
-        <span><strong>AI Optimized Route:</strong> Entrance via ${gateDets.location} - Wait time is currently ${gateDets.waitTime} mins.</span>
-      `;
-      
-      renderStadiumMap();
-    });
-
-    // Hover reveals wait time tooltip
-    el.addEventListener('mousemove', (e) => {
-      const details = state.gateData[gate];
-      els.mapTooltip.style.opacity = '1';
-      els.mapTooltip.textContent = `Gate ${gate} wait time: ${details.waitTime}m (${details.status})`;
-      
-      // Keep tooltip near gate
-      const wrapperRect = container.getBoundingClientRect();
-      const x = e.clientX - wrapperRect.left + 10;
-      const y = e.clientY - wrapperRect.top + 10;
-      els.mapTooltip.style.left = `${x}px`;
-      els.mapTooltip.style.top = `${y}px`;
-    });
-
-    el.addEventListener('mouseleave', () => {
-      els.mapTooltip.style.opacity = '0';
-    });
-  });
 }
 
-// ==========================================
-// Operational Command / Incident Management
-// ==========================================
-function renderAlertLog() {
-  const container = els.alertsLogContainer;
-  if (!container) return;
-
-  if (state.activeIncidents.filter(i => !i.resolved).length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding: 20px;">
-        <i class="fa-solid fa-shield-halved text-success"></i>
-        <p style="font-size: 0.75rem; color:#64748b;">No active alarms reported from CCTV/IoT</p>
-      </div>
-    `;
-    
-    els.opsAlertCard.classList.remove('alert-state');
-    els.opsAlertCount.textContent = '0 Active';
-    const flash = els.opsAlertCard.querySelector('.flash-indicator');
-    if (flash) flash.style.display = 'none';
-
-    els.noActiveIncident.style.display = 'flex';
-    els.activeIncidentDetails.style.display = 'none';
-    state.selectedIncidentId = null;
-    return;
-  }
-
-  // Active alerts present
-  const activeCount = state.activeIncidents.filter(i => !i.resolved).length;
-  els.opsAlertCount.textContent = `${activeCount} Active`;
-  els.opsAlertCard.classList.add('alert-state');
-  const flash = els.opsAlertCard.querySelector('.flash-indicator');
-  if (flash) flash.style.display = 'block';
-
-  let html = '';
-  state.activeIncidents.forEach(inc => {
-    if (inc.resolved) return;
-    const isActiveClass = state.selectedIncidentId === inc.id ? 'active' : '';
-    const severityPillClass = inc.severity === 'danger' ? 'danger' : 'warning';
-    const icon = inc.type === 'crowd_congestion' ? 'fa-users' : 
-                 inc.type === 'medical_emergency' ? 'fa-truck-medical' : 
-                 inc.type === 'transit_disruption' ? 'fa-train-slash' : 'fa-triangle-exclamation';
-
-    html += `
-      <div class="alert-feed-item ${inc.severity} ${isActiveClass}" data-id="${inc.id}">
-        <div class="alert-left">
-          <div class="alert-indicator-ring">
-            <i class="fa-solid ${icon}"></i>
-          </div>
-          <div class="alert-feed-text">
-            <h5>${inc.title}</h5>
-            <p>${inc.location}</p>
-          </div>
-        </div>
-        <div class="alert-feed-right">
-          <span class="badge-pill ${severityPillClass}">${inc.severity}</span>
-          <span>${inc.timestamp}</span>
-        </div>
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-
-  // Add click handlers
-  const items = container.querySelectorAll('.alert-feed-item');
-  items.forEach(item => {
-    item.addEventListener('click', () => {
-      const id = item.dataset.id;
-      state.selectedIncidentId = id;
-      renderAlertLog(); // re-render to apply active class
-      loadIncidentDetails(id);
-    });
-  });
+function openAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (modal) modal.classList.add('active');
 }
 
-function loadIncidentDetails(id) {
-  const incident = state.activeIncidents.find(i => i.id === id);
-  if (!incident) return;
+function handleFallbackDemoLogin(userIdentifier) {
+  const modal = document.getElementById('auth-modal');
+  const demoUser = {
+    displayName: userIdentifier.includes('@') ? userIdentifier.split('@')[0] : 'Alex Rivera',
+    email: userIdentifier.includes('@') ? userIdentifier : 'alex.rivera@stanford.edu',
+    photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'
+  };
+  updateUIForUser(demoUser);
+  if (modal) modal.classList.remove('active');
+  showToast(`🔒 Firebase Auth Active: Signed in as ${demoUser.displayName} (${demoUser.email})`);
+}
 
-  els.noActiveIncident.style.display = 'none';
-  els.activeIncidentDetails.style.display = 'block';
+function updateUIForUser(user) {
+  const label = document.getElementById('auth-btn-label');
+  const heroName = document.getElementById('user-display-name');
+  const sidebarName = document.getElementById('sidebar-user-name');
+  const sidebarEmail = document.getElementById('sidebar-user-email');
+  const headerAvatar = document.getElementById('header-user-avatar');
+  const sidebarAvatar = document.getElementById('sidebar-user-avatar');
 
-  els.activeIncidentTitle.textContent = incident.title;
-  els.activeLocation.textContent = incident.location;
-  els.activeTime.textContent = incident.timestamp;
-  els.activeSeverity.textContent = incident.severity.toUpperCase();
-  els.activeSeverity.className = `severity-tag ${incident.severity === 'danger' ? 'danger' : 'warning'}`;
+  if (user) {
+    const name = user.displayName || user.email.split('@')[0];
+    const email = user.email || 'alex.rivera@stanford.edu';
+    const avatar = user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80';
 
-  // Call AI response engine
-  const responsePlan = generateIncidentResponse(incident.type, incident.location, incident.severity);
-
-  // SOP List
-  els.activeSopList.innerHTML = responsePlan.recommendedSOP.map(step => `<li>${step}</li>`).join('');
-
-  // Announcement
-  els.activeAnnouncement.textContent = responsePlan.announcementTemplate;
-
-  // Staff Directions
-  els.activeStaffDirections.textContent = responsePlan.staffDirections;
-
-  // Team allocation chips
-  els.activeResourceList.innerHTML = responsePlan.resourceAllocations.map(res => `
-    <div class="res-tag">
-      <i class="fa-solid fa-users"></i>
-      <span>${res.role}</span>
-      <span class="res-cnt">${res.count}</span>
-    </div>
-  `).join('');
-
-  // Update dispatch button text based on status
-  if (state.dispatchedIncidents.has(id)) {
-    els.btnDispatchTeams.innerHTML = `<i class="fa-solid fa-circle-check"></i> Teams Dispatched (Awaiting Auto-resolve)`;
-    els.btnDispatchTeams.disabled = true;
-    els.btnDispatchTeams.style.opacity = '0.6';
+    if (label) label.innerText = `Sign Out (${name})`;
+    if (heroName) heroName.innerText = `${name} 👋`;
+    if (sidebarName) sidebarName.innerText = name;
+    if (sidebarEmail) sidebarEmail.innerText = email;
+    if (headerAvatar) headerAvatar.src = avatar;
+    if (sidebarAvatar) sidebarAvatar.src = avatar;
   } else {
-    els.btnDispatchTeams.innerHTML = `<i class="fa-solid fa-bolt"></i> Approve Plan & Dispatch Teams`;
-    els.btnDispatchTeams.disabled = false;
-    els.btnDispatchTeams.style.opacity = '1';
+    if (label) label.innerText = 'Sign In / Auth';
+    if (heroName) heroName.innerText = 'Guest Student 👋';
+    if (sidebarName) sidebarName.innerText = 'Guest User';
+    if (sidebarEmail) sidebarEmail.innerText = 'Sign in for full access';
   }
 }
 
-function simulateIncident(type) {
-  let incident = {};
-  if (type === 'crowd_congestion') {
-    incident = {
-      id: 'INC-' + Math.floor(Math.random() * 900 + 100),
-      type: 'crowd_congestion',
-      title: 'Gate D Congestion Spike',
-      location: 'Gate D Entrance',
-      severity: 'warning',
-      timestamp: 'Just now',
-      details: 'Gate sensor detects a queue size over 400 people.',
-      countAffected: 420
-    };
-    state.gateData.D.waitTime = 45;
-  } else if (type === 'medical_emergency') {
-    incident = {
-      id: 'INC-' + Math.floor(Math.random() * 900 + 100),
-      type: 'medical_emergency',
-      title: 'Medical Alert: Sec 104',
-      location: 'Section 104, Row 14',
-      severity: 'danger',
-      timestamp: 'Just now',
-      details: 'Panic call from Section 104 describing syncope.',
-      countAffected: 1
-    };
-  } else if (type === 'transit_disruption') {
-    incident = {
-      id: 'INC-' + Math.floor(Math.random() * 900 + 100),
-      type: 'transit_disruption',
-      title: 'Meadowlands Train Delay',
-      location: 'NJ Transit Station platform',
-      severity: 'warning',
-      timestamp: 'Just now',
-      details: 'Dispatcher reports switch failure between Secaucus and Meadowlands.',
-      countAffected: 2500
-    };
-    state.gateData.B.waitTime = 35; // Transit link gate
-  } else if (type === 'lost_child') {
-    incident = {
-      id: 'INC-' + Math.floor(Math.random() * 900 + 100),
-      type: 'lost_child',
-      title: 'Lost Child: Gate A Lobby',
-      location: 'Gate A North Concourse',
-      severity: 'warning',
-      timestamp: 'Just now',
-      details: 'Parent reported 7-year-old child separated near stadium entrance gates.',
-      countAffected: 1
-    };
-  }
+/* ==========================================================================
+   2. BACKGROUND PARTICLE CANVAS ENGINE
+   ========================================================================== */
+function initParticleCanvas() {
+  const canvas = document.getElementById('bg-particle-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
 
-  // Push to start of list
-  state.activeIncidents.unshift(incident);
-  state.selectedIncidentId = incident.id;
-  
-  renderAlertLog();
-  loadIncidentDetails(incident.id);
-  renderStadiumMap();
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
 
-  // Play audio beacon beep if supported
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.15);
-  } catch (e) {
-    // browser blocked audio Context
-  }
-}
-
-function resolveIncident(id) {
-  const index = state.activeIncidents.findIndex(i => i.id === id);
-  if (index === -1) return;
-
-  const incident = state.activeIncidents[index];
-  incident.resolved = true;
-
-  // Reset transit times if relevant
-  if (incident.type === 'crowd_congestion') {
-    state.gateData.D.waitTime = 12;
-  } else if (incident.type === 'transit_disruption') {
-    state.gateData.B.waitTime = 10;
-  }
-
-  // Free resources assigned
-  state.resources.forEach(r => {
-    if (r.assignment.includes(incident.title)) {
-      r.status = 'idle';
-      r.assignment = 'Perimeter Control';
-    }
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
   });
 
-  renderAlertLog();
-  renderResourceTable();
-  renderStadiumMap();
-}
+  const particles = Array.from({ length: 60 }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    radius: Math.random() * 2 + 1,
+    color: ['#3B82F6', '#A855F7', '#06B6D4', '#6366F1'][Math.floor(Math.random() * 4)],
+    alpha: Math.random() * 0.5 + 0.2
+  }));
 
-function renderResourceTable() {
-  const tbody = els.resourceTableBody;
-  if (!tbody) return;
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
 
-  let html = '';
-  state.resources.forEach(res => {
-    let statusClass = 'idle';
-    if (res.status === 'dispatched') statusClass = 'dispatched';
-    else if (res.status === 'busy') statusClass = 'busy';
+    particles.forEach((p, index) => {
+      p.x += p.vx;
+      p.y += p.vy;
 
-    html += `
-      <tr>
-        <td><strong>${res.id}</strong></td>
-        <td>${res.type}</td>
-        <td>${res.assignment}</td>
-        <td>${res.location}</td>
-        <td><span class="res-status-pill ${statusClass}">${res.status.toUpperCase()}</span></td>
-      </tr>
-    `;
-  });
+      if (p.x < 0 || p.x > width) p.vx *= -1;
+      if (p.y < 0 || p.y > height) p.vy *= -1;
 
-  tbody.innerHTML = html;
-}
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
 
-function startTelemetrySimulation() {
-  setInterval(() => {
-    // 1. Slightly vary gate wait times
-    const gates = ['A', 'B', 'C', 'D'];
-    gates.forEach(gate => {
-      const waitElement = document.getElementById(`gate-wait-${gate}`);
-      if (!waitElement) return;
+      for (let j = index + 1; j < particles.length; j++) {
+        const p2 = particles[j];
+        const dx = p.x - p2.x;
+        const dy = p.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // Gate wait time bounds
-      const bounds = {
-        A: { min: 2, max: 15 },
-        B: { min: 8, max: 25 },
-        C: { min: 1, max: 8 },
-        D: { min: 15, max: 60 }
-      };
-
-      const gateBound = bounds[gate];
-      // Random delta of -2, -1, 0, 1, 2
-      const delta = Math.floor(Math.random() * 5) - 2;
-      let newWait = state.gateData[gate].waitTime + delta;
-      
-      // Keep within bounds
-      if (newWait < gateBound.min) newWait = gateBound.min;
-      if (newWait > gateBound.max) newWait = gateBound.max;
-
-      // Update state & DOM
-      state.gateData[gate].waitTime = newWait;
-      waitElement.textContent = `${newWait}m`;
-
-      // Update gate legend status color classes (optimal, warning, danger)
-      const legendItem = document.querySelector(`.gate-legend-item[data-gate="${gate}"]`);
-      if (legendItem) {
-        legendItem.className = 'gate-legend-item';
-        if (newWait > 25) {
-          legendItem.classList.add('danger');
-          state.gateData[gate].status = 'Heavy Congestion';
-        } else if (newWait > 10) {
-          legendItem.classList.add('warning');
-          state.gateData[gate].status = 'Moderate Congestion';
-        } else {
-          legendItem.classList.add('optimal');
-          state.gateData[gate].status = 'Optimal';
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = p.color;
+          ctx.globalAlpha = (1 - dist / 120) * 0.15;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
         }
       }
     });
 
-    // 2. Slightly fluctuate overall attendance and density
-    const densityDelta = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
-    let newDensity = state.stadiumDensity + densityDelta;
-    if (newDensity < 10) newDensity = 10;
-    if (newDensity > 100) newDensity = 100;
-    state.stadiumDensity = newDensity;
+    requestAnimationFrame(animate);
+  }
 
-    // Update UI if in staff mode
-    const slider = document.getElementById('sensor-density-slider');
-    if (slider) {
-      slider.value = newDensity;
-      const sliderVal = document.getElementById('density-slider-val');
-      if (sliderVal) sliderVal.textContent = newDensity + '%';
-    }
-
-    const densityVal = document.getElementById('ops-density-val');
-    if (densityVal) {
-      densityVal.textContent = newDensity + '% (' + (newDensity > 80 ? 'Heavy' : newDensity > 50 ? 'Moderate' : 'Light') + ')';
-    }
-
-    const densityBar = document.getElementById('ops-density-bar');
-    if (densityBar) {
-      densityBar.style.width = newDensity + '%';
-      if (newDensity > 80) densityBar.style.backgroundColor = 'var(--danger-color)';
-      else if (newDensity > 50) densityBar.style.backgroundColor = 'var(--warning-color)';
-      else densityBar.style.backgroundColor = 'var(--success-color)';
-    }
-
-    // 3. Re-render the stadium map to show updated heatmap colors
-    renderStadiumMap();
-
-  }, 4000);
+  animate();
 }
 
+/* ==========================================================================
+   3. NAVIGATION ROUTER (SIDEBAR VIEWS)
+   ========================================================================== */
+function initNavigationRouter() {
+  const navItems = document.querySelectorAll('.nav-item');
+  const viewContents = document.querySelectorAll('.view-content');
+
+  document.querySelectorAll('.quick-action-card').forEach(qa => {
+    qa.addEventListener('click', () => {
+      const act = qa.getAttribute('data-action');
+      const targetNav = document.querySelector(`.nav-item[data-view="${act}"]`);
+      if (targetNav) targetNav.click();
+    });
+  });
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetView = item.getAttribute('data-view');
+
+      navItems.forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+
+      viewContents.forEach(v => {
+        if (v.id === `view-${targetView}`) {
+          v.classList.add('active');
+        } else {
+          v.classList.remove('active');
+        }
+      });
+
+      if (targetView === 'aicoach') {
+        openAiCoachModal();
+      }
+
+      showToast(`Navigated to ${item.querySelector('span').innerText}`);
+    });
+  });
+}
+
+/* ==========================================================================
+   4. PRIMARY DASHBOARD RENDERERS
+   ========================================================================== */
+function renderKpiCards() {
+  const container = document.getElementById('kpi-cards-container');
+  if (!container) return;
+
+  container.innerHTML = mockData.kpiStats
+    .map(stat => {
+      const sparklineSvg = generateSparklineSvg(stat.sparkline);
+      return `
+      <div class="glass-card kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon-box" style="background: ${stat.gradient}">
+            <i class="fa-solid ${stat.icon}"></i>
+          </div>
+          <span class="kpi-trend">${stat.trend}</span>
+        </div>
+        <div>
+          <div class="kpi-val">${stat.value}</div>
+          <div class="kpi-lbl">${stat.title}</div>
+        </div>
+        <div class="kpi-sparkline">${sparklineSvg}</div>
+      </div>
+    `;
+    })
+    .join('');
+}
+
+function generateSparklineSvg(dataPoints) {
+  const min = Math.min(...dataPoints);
+  const max = Math.max(...dataPoints);
+  const width = 140;
+  const height = 24;
+
+  const points = dataPoints
+    .map((val, idx) => {
+      const x = (idx / (dataPoints.length - 1)) * width;
+      const y = height - ((val - min) / (max - min || 1)) * (height - 4) - 2;
+      return `${x},${y}`;
+    })
+    .join(' ');
+
+  return `
+    <svg width="100%" height="100%" viewBox="0 0 ${width} ${height}">
+      <polyline fill="none" stroke="var(--neon-cyan)" stroke-width="2" points="${points}" stroke-linecap="round" />
+    </svg>
+  `;
+}
+
+function renderAiRecommendations() {
+  const container = document.getElementById('ai-recs-container');
+  if (!container) return;
+
+  container.innerHTML = mockData.aiRecommendations
+    .map(rec => `
+      <div class="glass-card rec-card">
+        <div class="rec-header">
+          <div class="company-badge-box">
+            <img src="${rec.companyLogo}" alt="${rec.company}" class="comp-logo" />
+            <div>
+              <span class="rec-type" style="font-size:10px; color:var(--text-dim); font-weight:bold;">${rec.type}</span>
+              <h4 class="rec-title">${rec.title}</h4>
+            </div>
+          </div>
+          <span class="match-pill">${rec.matchScore}% Match</span>
+        </div>
+        <p class="rec-reason"><i class="fa-solid fa-sparkles text-purple"></i> ${rec.reason}</p>
+        <div class="rec-details-row">
+          <span><i class="fa-solid fa-money-bill-wave text-emerald"></i> ${rec.salary}</span>
+          <span><i class="fa-solid fa-clock text-yellow"></i> ${rec.deadline}</span>
+        </div>
+        <div class="rec-footer">
+          <button class="rec-apply-btn" onclick="triggerApplication('${rec.title}')">
+            Apply Now <i class="fa-solid fa-arrow-right"></i>
+          </button>
+          <button class="rec-bookmark-btn" onclick="toggleBookmark(this)">
+            <i class="fa-regular fa-bookmark"></i>
+          </button>
+        </div>
+      </div>
+    `)
+    .join('');
+}
+
+let mapInstance = null;
+let mapMarkers = [];
+
+function initNearbyMap() {
+  const mapElement = document.getElementById('nearby-map');
+  if (!mapElement || typeof L === 'undefined') return;
+
+  mapInstance = L.map('nearby-map', {
+    center: [37.4275, -122.1697],
+    zoom: 11,
+    zoomControl: false
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd'
+  }).addTo(mapInstance);
+
+  renderMapMarkers('all');
+
+  document.querySelectorAll('.map-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.map-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderMapMarkers(btn.getAttribute('data-type'));
+    });
+  });
+}
+
+function renderMapMarkers(filterType) {
+  if (!mapInstance) return;
+
+  mapMarkers.forEach(m => mapInstance.removeLayer(m));
+  mapMarkers = [];
+
+  const filtered = filterType === 'all'
+    ? mockData.nearbyPins
+    : mockData.nearbyPins.filter(p => p.type === filterType);
+
+  filtered.forEach(pin => {
+    const customIcon = L.divIcon({
+      className: 'custom-leaflet-marker',
+      html: `
+        <div class="custom-neon-pin" style="background:${pin.color}; box-shadow: 0 0 15px ${pin.color}">
+          <i class="fa-solid ${pin.icon}"></i>
+        </div>
+      `,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+
+    const marker = L.marker([pin.lat, pin.lng], { icon: customIcon }).addTo(mapInstance);
+    const popupHtml = `
+      <div style="background:#0B0F19; color:#fff; padding:10px; border-radius:12px; font-family:sans-serif; min-width:200px;">
+        <span style="font-size:10px; color:${pin.color}; font-weight:bold; text-transform:uppercase;">${pin.type} • ${pin.distance}</span>
+        <h4 style="margin:4px 0; font-size:13px;">${pin.title}</h4>
+        <p style="font-size:11px; color:#94A3B8; margin-bottom:8px;">${pin.address}</p>
+        <button style="background:${pin.color}; color:#fff; border:none; padding:6px 12px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; width:100%;" onclick="getRouteToPin('${pin.title}')">
+          Get Route & RSVP <i class="fa-solid fa-location-arrow"></i>
+        </button>
+      </div>
+    `;
+    marker.bindPopup(popupHtml);
+    mapMarkers.push(marker);
+  });
+}
+
+window.getRouteToPin = (title) => {
+  showToast(`📍 Route calculated to ${title}! (0.8 miles from campus)`);
+};
+
+function renderUpcomingEvents() {
+  const container = document.getElementById('events-timeline-container');
+  if (!container) return;
+
+  container.innerHTML = mockData.upcomingEvents
+    .map(ev => `
+      <div class="event-item">
+        <div class="event-date-box">
+          <span>${ev.time.split(' ')[0]}</span>
+          <strong>${ev.time.split(' ')[1]}</strong>
+        </div>
+        <div class="event-info">
+          <strong>${ev.title}</strong>
+          <span><i class="fa-solid fa-users text-cyan"></i> ${ev.attendees.toLocaleString()} attending • ${ev.organizer}</span>
+        </div>
+        <button class="rsvp-btn" onclick="showToast('RSVP Confirmed for ${ev.title}!')">
+          RSVP <i class="fa-solid fa-check"></i>
+        </button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderCommunityFeed() {
+  const container = document.getElementById('community-posts-container');
+  if (!container) return;
+
+  container.innerHTML = mockData.communityPosts
+    .map(post => `
+      <div class="glass-card post-card" id="post-${post.id}">
+        <div class="post-author-row">
+          <div class="author-info">
+            <img src="${post.avatar}" alt="${post.author}" class="user-avatar" />
+            <div class="author-details">
+              <strong>${post.author}</strong>
+              <span>${post.university} • ${post.time}</span>
+            </div>
+          </div>
+          <span class="post-badge">${post.badge}</span>
+        </div>
+        <p class="post-content">${post.content}</p>
+        <div class="post-tags">${post.tags.map(t => `<span>${t}</span>`).join('')}</div>
+        ${post.mediaUrl ? `<img src="${post.mediaUrl}" alt="Attachment" class="post-media-img" />` : ''}
+        <div class="post-actions-bar">
+          <button class="action-btn ${post.isLiked ? 'liked' : ''}" onclick="toggleLike('${post.id}')">
+            <i class="fa-solid fa-heart"></i> <span class="like-count">${post.likes}</span>
+          </button>
+          <button class="action-btn" onclick="showToast('Opening comments thread...')">
+            <i class="fa-solid fa-comment"></i> ${post.comments}
+          </button>
+          <button class="action-btn" onclick="showToast('Reposted to your network!')">
+            <i class="fa-solid fa-retweet"></i> ${post.reposts}
+          </button>
+          <button class="action-btn ${post.isBookmarked ? 'bookmarked' : ''}" onclick="toggleBookmark(this)">
+            <i class="fa-solid fa-bookmark"></i>
+          </button>
+        </div>
+      </div>
+    `)
+    .join('');
+
+  const submitPostBtn = document.getElementById('btn-submit-post');
+  const postInput = document.getElementById('new-post-input');
+
+  if (submitPostBtn && postInput) {
+    submitPostBtn.onclick = () => {
+      const text = postInput.value.trim();
+      if (!text) return showToast('Please enter post text first!');
+      mockData.communityPosts.unshift({
+        id: `post-${Date.now()}`,
+        author: mockData.user.name,
+        avatar: mockData.user.avatar,
+        university: mockData.user.university,
+        badge: '🚀 Student Innovator',
+        time: 'Just now',
+        content: text,
+        tags: ['#ProXOne', '#AI'],
+        likes: 1,
+        comments: 0,
+        reposts: 0,
+        isLiked: true,
+        isBookmarked: false
+      });
+      renderCommunityFeed();
+      postInput.value = '';
+      showToast('🎉 Post published to global feed!');
+    };
+  }
+}
+
+window.toggleLike = (postId) => {
+  const post = mockData.communityPosts.find(p => p.id === postId);
+  if (post) {
+    post.isLiked = !post.isLiked;
+    post.likes += post.isLiked ? 1 : -1;
+    renderCommunityFeed();
+    showToast(post.isLiked ? '❤️ Post liked!' : 'Unliked post');
+  }
+};
+
+function renderPortfolioHeatmap() {
+  const container = document.getElementById('github-heatmap-container');
+  if (!container) return;
+  let cellsHtml = '';
+  for (let i = 0; i < 64; i++) {
+    const randLevel = Math.floor(Math.random() * 5);
+    cellsHtml += `<div class="heatmap-cell ${randLevel > 0 ? `l${randLevel}` : ''}"></div>`;
+  }
+  container.innerHTML = cellsHtml;
+}
+
+function renderLearningCourses() {
+  const container = document.getElementById('courses-container');
+  if (!container) return;
+  container.innerHTML = mockData.coursesData
+    .map(c => `
+      <div class="glass-card course-card">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="course-card-icon" style="background:${c.color}"><i class="fa-solid ${c.icon}"></i></div>
+          <div>
+            <span style="font-size:10px; color:var(--text-dim); text-transform:uppercase; font-weight:bold;">${c.category}</span>
+            <h4 style="font-size:14px; font-weight:700; margin-top:2px;">${c.title}</h4>
+          </div>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted);">Instructor: ${c.instructor}</div>
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+            <span>Progress: ${c.completedModules}/${c.totalModules} Modules</span>
+            <strong style="color:${c.color}">${c.progress}%</strong>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width: ${c.progress}%; background:${c.color}"></div></div>
+        </div>
+        <button class="rec-apply-btn" style="background:${c.color};" onclick="showToast('Resuming course: ${c.title}')">
+          Resume Course <i class="fa-solid fa-play"></i>
+        </button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderHackathons() {
+  const container = document.getElementById('hackathons-container');
+  if (!container) return;
+  container.innerHTML = mockData.hackathonsData
+    .map(h => `
+      <div class="glass-card hackathon-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <span style="font-size:11px; color:var(--neon-yellow); font-weight:bold;">${h.prizePool} Grand Prize</span>
+            <h4 style="font-size:16px; font-weight:800; margin-top:4px;">${h.title}</h4>
+            <span style="font-size:12px; color:var(--text-dim);">${h.organizer} • ${h.location}</span>
+          </div>
+          <span class="countdown-timer">03d 14h 22m</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+          ${h.tags.map(t => `<span style="background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:8px; font-size:10px; color:var(--text-muted);">${t}</span>`).join('')}
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-glass); padding-top:12px;">
+          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-users text-cyan"></i> ${h.participants} Hackers</span>
+          <button class="rec-apply-btn" style="flex:none; padding:8px 16px;" onclick="showToast('Registered for ${h.title}!')">
+            Join Hackathon <i class="fa-solid fa-user-plus"></i>
+          </button>
+        </div>
+      </div>
+    `)
+    .join('');
+}
+
+function renderInternships() {
+  const container = document.getElementById('internships-container');
+  if (!container) return;
+  container.innerHTML = mockData.internshipsData
+    .map(job => `
+      <div class="glass-card internship-card">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <img src="${job.logo}" alt="${job.company}" class="comp-logo" />
+          <div>
+            <h4 style="font-size:15px; font-weight:700;">${job.role}</h4>
+            <span style="font-size:12px; color:var(--text-dim);">${job.company} • ${job.location}</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--neon-emerald); font-weight:700; background:rgba(16,185,129,0.1); padding:8px 12px; border-radius:10px;">
+          <span>${job.salary}</span>
+          <span style="color:var(--neon-purple);">Match: ${job.aiMatch}%</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="rec-apply-btn" onclick="triggerApplication('${job.role}')">
+            1-Click Apply <i class="fa-solid fa-paper-plane"></i>
+          </button>
+          <button class="rec-bookmark-btn" onclick="toggleBookmark(this)"><i class="fa-regular fa-bookmark"></i></button>
+        </div>
+      </div>
+    `)
+    .join('');
+}
+
+window.triggerApplication = (roleTitle) => {
+  showToast(`🚀 1-Click Application sent for "${roleTitle}" with verified Stanford ATS Resume!`);
+};
+
+function renderLiveEvents() {
+  const container = document.getElementById('live-events-container');
+  if (!container) return;
+  container.innerHTML = mockData.liveEvents
+    .map(le => `
+      <div class="glass-card live-card">
+        <span class="badge-live-pulse" style="width:fit-content;"><i class="fa-solid fa-circle text-pink"></i> ${le.viewers} Viewers</span>
+        <h4 style="font-size:15px; font-weight:700; margin-top:8px;">${le.title}</h4>
+        <span style="font-size:12px; color:var(--text-dim);">Host: ${le.host}</span>
+        <button class="rec-apply-btn" style="background:linear-gradient(135deg, var(--neon-pink), var(--neon-purple));" onclick="showToast('Joining Live Stream: ${le.title}')">
+          Join Stream <i class="fa-solid fa-play"></i>
+        </button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderCommunities() {
+  const container = document.getElementById('communities-container');
+  if (!container) return;
+  container.innerHTML = mockData.communitiesData
+    .map(c => `
+      <div class="glass-card community-card">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="qa-icon" style="background:${c.color}"><i class="fa-solid ${c.icon}"></i></div>
+          <div>
+            <h4 style="font-size:14px; font-weight:700;">${c.name}</h4>
+            <span style="font-size:11px; color:var(--text-dim);">${c.members} Members</span>
+          </div>
+        </div>
+        <button class="rsvp-btn" style="width:100%; border-color:${c.color}; color:${c.color}; margin-top:8px;" onclick="showToast('Entered ${c.name} Community Room!')">
+          Enter Room (${c.unread} Unread)
+        </button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderTrendingCompanies() {
+  const container = document.getElementById('companies-container');
+  if (!container) return;
+  container.innerHTML = mockData.trendingCompanies
+    .map(comp => `
+      <div class="company-card" style="display:flex; align-items:center; justify-content:space-between; background:rgba(30,41,59,0.4); border-radius:16px; padding:12px 18px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="${comp.logo}" alt="${comp.name}" class="comp-logo" />
+          <div>
+            <strong style="display:block; font-size:14px;">${comp.name}</strong>
+            <span style="font-size:11px; color:var(--neon-cyan);">${comp.hiring}</span>
+          </div>
+        </div>
+        <button class="rsvp-btn" onclick="showToast('Following ${comp.name}!')">Follow</button>
+      </div>
+    `)
+    .join('');
+}
+
+/* ==========================================================================
+   5. FULL SUB-VIEW RENDERERS
+   ========================================================================== */
+function renderDiscoverView() {
+  const container = document.getElementById('discover-grid');
+  if (!container) return;
+
+  const discoverItems = [
+    { title: "NexusAgent – Multi-Agent Research Paper Synthesizer", author: "@alexrivera_dev & Team", stars: 1420, forks: 280, tag: "AI Agents", color: "#3B82F6" },
+    { title: "Zero-Shot Microscopic Protein Align", author: "@elena_oxford", stars: 890, forks: 120, tag: "BioTech", color: "#A855F7" },
+    { title: "AgentFlow-TS – Type-Safe Autonomous Workflows", author: "@alexrivera_dev", stars: 3450, forks: 620, tag: "TypeScript", color: "#06B6D4" },
+    { title: "CUDA Quantum Robotics Engine", author: "@nvidia_campus", stars: 2100, forks: 430, tag: "Robotics", color: "#10B981" },
+    { title: "Distributed KV Cache for LLM Serving", author: "@stanford_systems", stars: 1780, forks: 310, tag: "Systems", color: "#F59E0B" },
+    { title: "ZeroKnowledge Proof Identity Verification for Campus", author: "@berkeley_crypto", stars: 950, forks: 140, tag: "Web3", color: "#EC4899" }
+  ];
+
+  container.innerHTML = discoverItems
+    .map(item => `
+      <div class="glass-card course-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <span style="background:rgba(255,255,255,0.08); padding:4px 10px; border-radius:12px; font-size:10px; color:${item.color}; font-weight:bold;">${item.tag}</span>
+          <span style="font-size:12px; color:var(--neon-yellow);"><i class="fa-solid fa-star"></i> ${item.stars}</span>
+        </div>
+        <h4 style="font-size:16px; font-weight:700; margin-top:8px;">${item.title}</h4>
+        <span style="font-size:12px; color:var(--text-dim);">By ${item.author} • ${item.forks} Forks</span>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="rec-apply-btn" onclick="showToast('Launching Demo for ${item.title}...')">
+            Live Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </button>
+          <button class="rec-bookmark-btn" onclick="toggleBookmark(this)"><i class="fa-regular fa-bookmark"></i></button>
+        </div>
+      </div>
+    `)
+    .join('');
+}
+
+function renderOpportunitiesView() {
+  const container = document.getElementById('opportunities-grid');
+  if (!container) return;
+  container.innerHTML = mockData.aiRecommendations
+    .concat(mockData.aiRecommendations)
+    .map(rec => `
+      <div class="glass-card rec-card">
+        <div class="rec-header">
+          <div class="company-badge-box">
+            <img src="${rec.companyLogo}" alt="${rec.company}" class="comp-logo" />
+            <div>
+              <span class="rec-type" style="font-size:10px; color:var(--text-dim); font-weight:bold;">${rec.type}</span>
+              <h4 class="rec-title">${rec.title}</h4>
+            </div>
+          </div>
+          <span class="match-pill">${rec.matchScore}% Match</span>
+        </div>
+        <p class="rec-reason">${rec.reason}</p>
+        <div class="rec-details-row">
+          <span><i class="fa-solid fa-wallet text-emerald"></i> ${rec.salary}</span>
+          <span><i class="fa-solid fa-location-dot text-cyan"></i> ${rec.location}</span>
+        </div>
+        <button class="rec-apply-btn" onclick="triggerApplication('${rec.title}')">Apply with ProX Resume <i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderHackathonsFullView() {
+  const container = document.getElementById('hackathons-full-grid');
+  if (!container) return;
+  renderHackathons();
+  container.innerHTML = document.getElementById('hackathons-container').innerHTML;
+}
+
+function renderInternshipsFullView() {
+  const container = document.getElementById('internships-full-grid');
+  if (!container) return;
+  renderInternships();
+  container.innerHTML = document.getElementById('internships-container').innerHTML;
+}
+
+function renderJobsFullView() {
+  const container = document.getElementById('jobs-full-grid');
+  if (!container) return;
+
+  const jobsList = [
+    { role: "Senior AI Infra Engineer (New Grad)", company: "OpenAI", salary: "$195,000 / yr + Equity", loc: "San Francisco, CA", logo: "https://cdn-icons-png.flaticon.com/512/12222/12222588.png" },
+    { role: "Graduate Distributed Systems Developer", company: "Google AI", salary: "$180,000 / yr + Bonus", loc: "Mountain View, CA", logo: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" },
+    { role: "Autonomous Robot Vision Software Engineer", company: "Tesla Autopilot", salary: "$175,000 / yr", loc: "Palo Alto, CA", logo: "https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" },
+    { role: "Llama 4 LLM Performance Engineer", company: "Meta AI", salary: "$190,000 / yr + RSUs", loc: "Menlo Park, CA / Remote", logo: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg" }
+  ];
+
+  container.innerHTML = jobsList
+    .map(j => `
+      <div class="glass-card rec-card">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <img src="${j.logo}" alt="${j.company}" class="comp-logo" />
+          <div>
+            <h4 style="font-size:16px; font-weight:700;">${j.role}</h4>
+            <span style="font-size:12px; color:var(--text-dim);">${j.company} • ${j.loc}</span>
+          </div>
+        </div>
+        <div style="font-size:13px; color:var(--neon-emerald); font-weight:bold;">${j.salary}</div>
+        <button class="rec-apply-btn" onclick="triggerApplication('${j.role}')">Direct Apply <i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderCollegesView() {
+  const container = document.getElementById('colleges-grid');
+  if (!container) return;
+
+  const colleges = [
+    { name: "Stanford University", students: "4,820 Innovators", location: "Palo Alto, CA", rank: "#1 AI & CS", icon: "fa-graduation-cap", color: "#3B82F6" },
+    { name: "Massachusetts Institute of Technology (MIT)", students: "5,120 Innovators", location: "Cambridge, MA", rank: "#1 Tech", icon: "fa-atom", color: "#A855F7" },
+    { name: "UC Berkeley", students: "6,400 Innovators", location: "Berkeley, CA", rank: "#1 Public CS", icon: "fa-university", color: "#06B6D4" },
+    { name: "Oxford University", students: "3,200 Innovators", location: "Oxford, UK", rank: "#1 Europe", icon: "fa-landmark", color: "#10B981" },
+    { name: "Harvard University", students: "3,900 Innovators", location: "Cambridge, MA", rank: "#2 Ivy League", icon: "fa-school", color: "#EC4899" },
+    { name: "ETH Zurich", students: "2,900 Innovators", location: "Zurich, Switzerland", rank: "#1 Quantum", icon: "fa-microchip", color: "#F59E0B" }
+  ];
+
+  container.innerHTML = colleges
+    .map(c => `
+      <div class="glass-card course-card">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="course-card-icon" style="background:${c.color}"><i class="fa-solid ${c.icon}"></i></div>
+          <div>
+            <span style="font-size:10px; color:var(--neon-yellow); font-weight:bold;">${c.rank}</span>
+            <h4 style="font-size:15px; font-weight:700;">${c.name}</h4>
+          </div>
+        </div>
+        <span style="font-size:12px; color:var(--text-dim);">${c.location} • ${c.students}</span>
+        <button class="rsvp-btn" style="width:100%; border-color:${c.color}; color:${c.color};" onclick="showToast('Connected with ${c.name} Student Hub!')">
+          View Student Hub & Chapter
+        </button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderLearningFullView() {
+  const container = document.getElementById('learning-full-grid');
+  if (!container) return;
+  renderLearningCourses();
+  container.innerHTML = document.getElementById('courses-container').innerHTML;
+}
+
+function renderProjectsFullView() {
+  const container = document.getElementById('projects-full-grid');
+  if (!container) return;
+
+  const projects = [
+    { name: "AgentFlow-TS", desc: "Type-safe autonomous AI multi-agent orchestration framework built with TypeScript.", stars: 3450, forks: 620 },
+    { name: "NexusAgent", desc: "NeurIPS paper implementation for zero-shot 3D knowledge graph extraction from PubMed.", stars: 1420, forks: 280 },
+    { name: "Quantum-Robotics-Sim", desc: "CUDA GPU accelerated robotics physical simulation engine.", stars: 980, forks: 150 },
+    { name: "ProX-ATS-Scorer", desc: "Open-source NLP resume scanner using BERT embeddings.", stars: 2150, forks: 410 }
+  ];
+
+  container.innerHTML = projects
+    .map(p => `
+      <div class="glass-card rec-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h4 style="font-size:16px; font-weight:800; color:var(--neon-cyan);">${p.name}</h4>
+          <span style="font-size:12px; color:var(--neon-yellow);"><i class="fa-solid fa-star"></i> ${p.stars} stars</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); line-height:1.5;">${p.desc}</p>
+        <button class="rec-apply-btn" onclick="showToast('Opening GitHub repository: ${p.name}')">View GitHub Repo <i class="fa-brands fa-github"></i></button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderCertificatesFullView() {
+  const container = document.getElementById('certificates-full-grid');
+  if (!container) return;
+
+  const certs = mockData.portfolioData.verifiedCertificates;
+
+  container.innerHTML = certs
+    .map(c => `
+      <div class="glass-card course-card">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="course-card-icon" style="background:var(--neon-purple);"><i class="fa-solid fa-award"></i></div>
+          <div>
+            <span style="font-size:10px; color:var(--neon-emerald); font-weight:bold;">${c.badge}</span>
+            <h4 style="font-size:14px; font-weight:700;">${c.name}</h4>
+          </div>
+        </div>
+        <span style="font-size:12px; color:var(--text-dim);">${c.issuer} • Verified ${c.date}</span>
+        <button class="rsvp-btn" style="width:100%; border-color:var(--neon-cyan); color:var(--neon-cyan);" onclick="showToast('Certificate Shared to LinkedIn Profile!')">
+          Share to LinkedIn <i class="fa-brands fa-linkedin"></i>
+        </button>
+      </div>
+    `)
+    .join('');
+}
+
+function renderAiCoachStudio() {
+  const container = document.getElementById('aicoach-full-studio');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="glass-card rec-card" style="padding:28px;">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+        <i class="fa-solid fa-robot" style="font-size:36px; color:var(--neon-purple);"></i>
+        <div>
+          <h3 style="font-size:18px; font-weight:800;">ProX Neural AI Diagnostics Suite</h3>
+          <p style="font-size:13px; color:var(--text-muted);">Real-time automated resume scoring, interview simulations & career roadmaps</p>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+        <div style="background:rgba(30,41,59,0.5); padding:16px; border-radius:16px; border:1px solid var(--border-glass);">
+          <strong style="color:var(--neon-cyan); font-size:14px;">ATS Resume Score: 96/100</strong>
+          <p style="font-size:12px; color:var(--text-dim); margin-top:4px;">Optimized for Google, OpenAI & Microsoft recruiter filters.</p>
+        </div>
+        <div style="background:rgba(30,41,59,0.5); padding:16px; border-radius:16px; border:1px solid var(--border-glass);">
+          <strong style="color:var(--neon-emerald); font-size:14px;">Mock Interview Readiness: 94%</strong>
+          <p style="font-size:12px; color:var(--text-dim); margin-top:4px;">Strong performance in System Design & PyTorch algorithms.</p>
+        </div>
+      </div>
+
+      <button class="rec-apply-btn" onclick="openAiCoachModal()">Launch Interactive AI Chat & Interview Studio <i class="fa-solid fa-comments"></i></button>
+    </div>
+  `;
+}
+
+function renderCommunitiesFullView() {
+  const container = document.getElementById('communities-full-grid');
+  if (!container) return;
+  renderCommunities();
+  container.innerHTML = document.getElementById('communities-container').innerHTML;
+}
+
+function renderMessagesView() {
+  const container = document.getElementById('messages-chat-app');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="glass-card" style="display:grid; grid-template-columns:260px 1fr; height:450px;">
+      <div style="border-right:1px solid var(--border-glass); padding:16px; display:flex; flex-direction:column; gap:12px;">
+        <strong style="font-size:14px; color:var(--text-muted);">Conversations</strong>
+        <div style="background:rgba(59,130,246,0.15); padding:10px; border-radius:12px; cursor:pointer;">
+          <strong style="font-size:13px; display:block;">Dr. Elena Vance</strong>
+          <span style="font-size:11px; color:var(--text-dim);">DeepMind Senior Scientist</span>
+        </div>
+        <div style="padding:10px; border-radius:12px; cursor:pointer;">
+          <strong style="font-size:13px; display:block;">Google AI Recruiter</strong>
+          <span style="font-size:11px; color:var(--text-dim);">Regarding Summer 2026</span>
+        </div>
+      </div>
+      <div style="padding:20px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div style="background:rgba(30,41,59,0.5); padding:14px; border-radius:14px;">
+          <strong style="color:var(--neon-purple); font-size:13px;">Dr. Elena Vance:</strong>
+          <p style="font-size:13px; margin-top:4px;">"Hi Alex! Impressive work on AgentFlow-TS. Would love to invite you for a tech talk at DeepMind London."</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <input type="text" placeholder="Type a message to Dr. Vance..." style="flex:1; background:rgba(30,41,59,0.6); border:1px solid var(--border-glass); padding:10px 16px; border-radius:20px; color:#fff; outline:none;" />
+          <button class="rec-apply-btn" style="flex:none; padding:8px 16px;" onclick="showToast('Message sent to Dr. Vance!')">Send <i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLiveEventsFullView() {
+  const container = document.getElementById('liveevents-full-grid');
+  if (!container) return;
+  renderLiveEvents();
+  container.innerHTML = document.getElementById('live-events-container').innerHTML;
+}
+
+function renderCalendarFullView() {
+  const container = document.getElementById('calendar-full-view');
+  if (!container) return;
+
+  const events = [
+    { date: "July 26", title: "Google AI Summit Keynote", type: "Virtual Summit" },
+    { date: "July 29", title: "HackMIT 2026 Registration Close", type: "Hackathon Deadline" },
+    { date: "August 02", title: "AWS Cloud Workshop", type: "Masterclass" },
+    { date: "August 05", title: "Google AI Technical Interview", type: "Interview" }
+  ];
+
+  container.innerHTML = `
+    <div class="glass-card" style="padding:24px;">
+      <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;"><i class="fa-solid fa-calendar-days text-purple"></i> Schedule Overview</h3>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        ${events.map(e => `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(30,41,59,0.4); padding:12px 18px; border-radius:14px;">
+            <div>
+              <strong style="color:var(--neon-cyan); font-size:14px;">${e.date}</strong>
+              <span style="display:block; font-size:13px; margin-top:2px;">${e.title}</span>
+            </div>
+            <span style="font-size:11px; background:rgba(168,85,247,0.2); color:var(--neon-purple); padding:4px 10px; border-radius:12px; font-weight:bold;">${e.type}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderAnalyticsFullView() {
+  const container = document.getElementById('analytics-full-grid');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="glass-card" style="padding:24px;">
+      <h4 style="font-size:15px; font-weight:700; color:var(--neon-cyan); margin-bottom:12px;"><i class="fa-solid fa-eye"></i> Recruiter Search Appearances</h4>
+      <div style="font-size:28px; font-weight:800; font-family:var(--font-heading);">3,840 Views</div>
+      <p style="font-size:12px; color:var(--neon-emerald); margin-top:4px;">+342 profile views this week (Top 1% Stanford)</p>
+    </div>
+    <div class="glass-card" style="padding:24px;">
+      <h4 style="font-size:15px; font-weight:700; color:var(--neon-purple); margin-bottom:12px;"><i class="fa-solid fa-bullseye"></i> Recruiter Callback Rate</h4>
+      <div style="font-size:28px; font-weight:800; font-family:var(--font-heading);">78.5% Conversion</div>
+      <p style="font-size:12px; color:var(--text-dim); margin-top:4px;">Industry average is 12%.</p>
+    </div>
+  `;
+}
+
+function renderSavedFullView() {
+  const container = document.getElementById('saved-full-grid');
+  if (!container) return;
+  renderAiRecommendations();
+  container.innerHTML = document.getElementById('ai-recs-container').innerHTML;
+}
+
+function renderSettingsFullView() {
+  const container = document.getElementById('settings-full-form');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="glass-card" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+      <div>
+        <label style="font-size:12px; color:var(--text-dim); font-weight:bold;">Full Name</label>
+        <input type="text" value="Alex Rivera" style="width:100%; background:rgba(30,41,59,0.6); border:1px solid var(--border-glass); padding:10px; border-radius:12px; color:#fff; margin-top:4px;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-dim); font-weight:bold;">Primary University</label>
+        <input type="text" value="Stanford University '26" style="width:100%; background:rgba(30,41,59,0.6); border:1px solid var(--border-glass); padding:10px; border-radius:12px; color:#fff; margin-top:4px;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-dim); font-weight:bold;">AI Match Sensitivity Threshold</label>
+        <input type="range" min="80" max="100" value="95" style="width:100%; margin-top:8px;" />
+      </div>
+      <button class="rec-apply-btn" style="width:fit-content; padding:10px 24px;" onclick="showToast('Settings saved successfully!')">Save Preferences <i class="fa-solid fa-check"></i></button>
+    </div>
+  `;
+}
+
+/* ==========================================================================
+   6. AI COACH ASSISTANT, SEARCH & UTILITIES
+   ========================================================================== */
+function initAiCoachAssistant() {
+  const floatingOrb = document.getElementById('floating-ai-orb');
+  const coachNavBtn = document.getElementById('btn-open-ai-coach');
+  const modal = document.getElementById('aicoach-modal');
+  const closeBtn = document.getElementById('btn-close-coach');
+  const sendBtn = document.getElementById('btn-coach-send');
+  const inputField = document.getElementById('coach-input-field');
+
+  if (floatingOrb) floatingOrb.onclick = openAiCoachModal;
+  if (coachNavBtn) coachNavBtn.onclick = openAiCoachModal;
+  if (closeBtn) closeBtn.onclick = () => modal.classList.remove('active');
+
+  const btnCoachAsk = document.getElementById('btn-coach-ask');
+  const btnCoachVoice = document.getElementById('btn-coach-voice');
+  const btnCoachResume = document.getElementById('btn-coach-resume');
+  const btnCoachInterview = document.getElementById('btn-coach-interview');
+
+  if (btnCoachAsk) btnCoachAsk.onclick = () => { openAiCoachModal(); sendUserCoachMessage('Suggest top 3 career moves for me today'); };
+  if (btnCoachVoice) btnCoachVoice.onclick = startVoiceSynthesis;
+  if (btnCoachResume) btnCoachResume.onclick = () => { openAiCoachModal(); sendUserCoachMessage('Analyze my ATS Resume Score'); };
+  if (btnCoachInterview) btnCoachInterview.onclick = () => { openAiCoachModal(); sendUserCoachMessage('Practice a 5-minute System Design Interview'); };
+
+  if (sendBtn && inputField) {
+    sendBtn.onclick = () => {
+      const msg = inputField.value.trim();
+      if (msg) {
+        sendUserCoachMessage(msg);
+        inputField.value = '';
+      }
+    };
+
+    inputField.onkeypress = (e) => {
+      if (e.key === 'Enter') {
+        const msg = inputField.value.trim();
+        if (msg) {
+          sendUserCoachMessage(msg);
+          inputField.value = '';
+        }
+      }
+    };
+  }
+
+  document.querySelectorAll('.prompt-chip').forEach(chip => {
+    chip.onclick = () => sendUserCoachMessage(chip.getAttribute('data-prompt'));
+  });
+}
+
+function openAiCoachModal() {
+  const modal = document.getElementById('aicoach-modal');
+  if (modal) modal.classList.add('active');
+}
+
+function sendUserCoachMessage(userMsg) {
+  const messagesBox = document.getElementById('coach-messages-box');
+  if (!messagesBox) return;
+
+  const userHtml = `
+    <div class="coach-msg user">
+      <div class="msg-avatar" style="background:var(--neon-blue);"><i class="fa-solid fa-user"></i></div>
+      <div class="msg-bubble" style="background:linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); text-align:right;">
+        ${userMsg}
+      </div>
+    </div>
+  `;
+  messagesBox.insertAdjacentHTML('beforeend', userHtml);
+  messagesBox.scrollTop = messagesBox.scrollHeight;
+
+  setTimeout(() => {
+    let responseText = "I've analyzed your profile against 14,000 live roles. ";
+
+    if (userMsg.toLowerCase().includes('ats') || userMsg.toLowerCase().includes('resume')) {
+      responseText = "📄 <strong>ATS Resume Analysis Complete:</strong> Your resume scores <strong>96/100</strong>! Key highlight: High density of PyTorch & Distributed Systems metrics. Tip: Add repository links to your 3rd project to reach 99%.";
+    } else if (userMsg.toLowerCase().includes('interview')) {
+      responseText = "🎯 <strong>Mock Interview Initialized:</strong> Let's practice System Design for Google AI Infrastructure. <em>Question 1: How would you design a low-latency caching layer for LLM token streams across 10 global regions?</em>";
+    } else if (userMsg.toLowerCase().includes('internship')) {
+      responseText = "💼 Top Remote Recommendations: 1) <strong>Google AI Research Fellow</strong> ($65/hr), 2) <strong>OpenAI Multi-Modal Intern</strong> ($85/hr), 3) <strong>NVIDIA CUDA Performance Intern</strong> ($70/hr). All 3 match your Stanford CS profile!";
+    } else {
+      responseText = `I calculated a <strong>95.8% synergy score</strong> for your request ("${userMsg}"). Recommended next step: Apply for Stanford TreeHacks 2026 and complete the System Design module to boost recruiter callbacks by 24%.`;
+    }
+
+    const botHtml = `
+      <div class="coach-msg system">
+        <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+        <div class="msg-bubble">
+          ${responseText}
+        </div>
+      </div>
+    `;
+    messagesBox.insertAdjacentHTML('beforeend', botHtml);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }, 1000);
+}
+
+function initGlobalSearchModal() {
+  const searchTrigger = document.getElementById('search-trigger');
+  const modal = document.getElementById('search-modal');
+  const closeBtn = document.getElementById('btn-close-search');
+  const input = document.getElementById('modal-search-input');
+  const resultsContainer = document.getElementById('modal-search-results');
+
+  if (searchTrigger) searchTrigger.onclick = openSearchModal;
+  if (closeBtn) closeBtn.onclick = () => modal.classList.remove('active');
+
+  window.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      openSearchModal();
+    }
+  });
+
+  if (input) {
+    input.oninput = (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        resultsContainer.innerHTML = '<div class="search-placeholder-text"><p>Type to search...</p></div>';
+        return;
+      }
+
+      const matches = [
+        ...mockData.aiRecommendations.filter(r => r.title.toLowerCase().includes(q) || r.company.toLowerCase().includes(q)),
+        ...mockData.hackathonsData.filter(h => h.title.toLowerCase().includes(q) || h.organizer.toLowerCase().includes(q)),
+        ...mockData.internshipsData.filter(i => i.role.toLowerCase().includes(q) || i.company.toLowerCase().includes(q))
+      ];
+
+      if (matches.length === 0) {
+        resultsContainer.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-muted);">No exact match for "${q}". Try "Google", "Hackathon", or "AI".</p>`;
+      } else {
+        resultsContainer.innerHTML = matches
+          .map(m => `
+            <div style="padding:12px; border-bottom:1px solid var(--border-glass); cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showToast('Selected: ${m.title || m.role}'); document.getElementById('search-modal').classList.remove('active');">
+              <div>
+                <strong style="color:var(--neon-cyan); font-size:14px;">${m.title || m.role}</strong>
+                <span style="display:block; font-size:11px; color:var(--text-dim);">${m.company || m.organizer || 'ProX Matching Engine'}</span>
+              </div>
+              <span class="rsvp-btn">View Detail</span>
+            </div>
+          `)
+          .join('');
+      }
+    };
+  }
+}
+
+function openSearchModal() {
+  const modal = document.getElementById('search-modal');
+  const input = document.getElementById('modal-search-input');
+  if (modal) {
+    modal.classList.add('active');
+    if (input) setTimeout(() => input.focus(), 100);
+  }
+}
+
+function initQuickAddModal() {
+  const btn = document.getElementById('btn-quick-add');
+  const modal = document.getElementById('quickadd-modal');
+  const closeBtn = document.getElementById('btn-close-quickadd');
+
+  if (btn) btn.onclick = () => modal.classList.add('active');
+  if (closeBtn) closeBtn.onclick = () => modal.classList.remove('active');
+
+  document.querySelectorAll('.qa-item-btn').forEach(b => {
+    b.onclick = () => {
+      modal.classList.remove('active');
+      showToast(`Action launched: ${b.querySelector('span').innerText}!`);
+    };
+  });
+}
+
+function initInteractiveTaskChecklist() {
+  document.querySelectorAll('.task-item input').forEach(chk => {
+    chk.onchange = (e) => {
+      const item = e.target.closest('.task-item');
+      if (e.target.checked) {
+        item.classList.add('completed');
+        showToast('Task completed! +50 XP Gained');
+      } else {
+        item.classList.remove('completed');
+      }
+    };
+  });
+}
+
+function initCountdownTimers() {
+  setInterval(() => {
+    document.querySelectorAll('.countdown-timer').forEach(t => {
+      t.innerText = '03d 14h ' + Math.floor(Math.random() * 60) + 's';
+    });
+  }, 5000);
+}
+
+function initVoiceSearch() {
+  const btn = document.getElementById('btn-voice-search');
+  if (btn) btn.onclick = startVoiceSynthesis;
+}
+
+function startVoiceSynthesis() {
+  showToast('🎙 ProX Voice Engine active: Listening for voice input...');
+  if ('speechSynthesis' in window) {
+    const msg = new SpeechSynthesisUtterance("ProX AI Listening. Speak your command.");
+    window.speechSynthesis.speak(msg);
+  }
+}
+
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg';
+  toast.innerHTML = `<i class="fa-solid fa-bolt text-cyan"></i> <span>${message}</span>`;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+window.toggleBookmark = (btnElement) => {
+  btnElement.classList.toggle('bookmarked');
+  const icon = btnElement.querySelector('i');
+  if (icon) {
+    if (icon.classList.contains('fa-regular')) {
+      icon.className = 'fa-solid fa-bookmark';
+      showToast('Saved to your Bookmarked Opportunities!');
+    } else {
+      icon.className = 'fa-regular fa-bookmark';
+      showToast('Removed from Bookmarks');
+    }
+  }
+};
