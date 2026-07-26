@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProX One – AI-Powered Global Student Ecosystem</title>
+    <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Leaflet.js CSS for Dark Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" crossorigin src="./assets/index-Copgy_4E.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-COC8gHfC.css">
+  </head>
+  <body class="dark-theme">
+    <!-- Background Animated Particle Canvas -->
+    <canvas id="bg-particle-canvas"></canvas>
+
+    <div class="app-layout">
+      <!-- TOP NAVIGATION -->
+      <header class="top-nav">
+        <div class="nav-left">
+          <div class="brand-logo" id="btn-brand">
+            <div class="logo-icon-glow">
+              <i class="fa-solid fa-atom"></i>
+            </div>
+            <div class="logo-text">
+              <span class="brand-name">ProX<mark>ONE</mark></span>
+              <span class="brand-sub">STUDENT ECOSYSTEM</span>
+            </div>
+          </div>
+
+          <div class="global-search-container" id="search-trigger">
+            <i class="fa-solid fa-sparkles search-ai-icon"></i>
+            <input type="text" placeholder="Global AI Search (Hackathons, Jobs, Internships, Projects, People)..." readonly />
+            <div class="keyboard-shortcut"><span class="key-badge">⌘ K</span></div>
+            <button class="voice-search-btn" id="btn-voice-search" title="Voice Search">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-right">
+          <button class="nav-icon-btn" id="btn-notifications" title="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span class="badge-pulse">4</span>
+          </button>
+
+          <button class="nav-icon-btn" id="btn-messages" title="Messages">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span class="badge-pulse">2</span>
+          </button>
+
+          <button class="nav-icon-btn" id="btn-calendar" title="Calendar">
+            <i class="fa-solid fa-calendar-days"></i>
+          </button>
+
+          <button class="nav-icon-btn glow-purple" id="btn-open-ai-coach" title="ProX AI Coach">
+            <i class="fa-solid fa-robot"></i>
+          </button>
+
+          <button class="quick-add-btn" id="btn-quick-add" title="Quick Add">
+            <i class="fa-solid fa-plus"></i>
+            <span>Quick Action</span>
+          </button>
+
+          <!-- Firebase Auth Controls -->
+          <button class="auth-pill-btn" id="btn-auth-trigger">
+            <i class="fa-solid fa-shield-halved text-cyan"></i>
+            <span id="auth-btn-label">Sign In / Auth</span>
+          </button>
+
+          <button class="theme-toggle-btn" id="btn-theme-toggle" title="Toggle Aesthetic Theme">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+
+          <div class="user-avatar-wrapper" id="btn-profile-menu">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80" alt="User" class="user-avatar" id="header-user-avatar" />
+            <span class="online-dot"></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- MAIN CONTAINER: SIDEBAR + CONTENT + RIGHT PANEL -->
+      <div class="main-body">
+        <!-- LEFT SIDEBAR -->
+        <aside class="left-sidebar" id="left-sidebar">
+          <div class="sidebar-scroll">
+            <ul class="nav-list">
+              <li class="nav-item active" data-view="dashboard">
+                <i class="fa-solid fa-house"></i> <span>Dashboard</span>
+              </li>
+              <li class="nav-item" data-view="discover">
+                <i class="fa-solid fa-globe"></i> <span>Discover</span>
+              </li>
+              <li class="nav-item" data-view="opportunities">
+                <i class="fa-solid fa-bullseye"></i> <span>Opportunities</span>
+              </li>
+              <li class="nav-item" data-view="hackathons">
+                <i class="fa-solid fa-trophy"></i> <span>Hackathons</span>
+                <span class="menu-badge hot">HOT</span>
+              </li>
+              <li class="nav-item" data-view="internships">
+                <i class="fa-solid fa-briefcase"></i> <span>Internships</span>
+              </li>
+              <li class="nav-item" data-view="jobs">
+                <i class="fa-solid fa-building"></i> <span>Jobs</span>
+              </li>
+              <li class="nav-item" data-view="colleges">
+                <i class="fa-solid fa-graduation-cap"></i> <span>Colleges</span>
+              </li>
+              <li class="nav-item" data-view="learning">
+                <i class="fa-solid fa-book-open-reader"></i> <span>Learning</span>
+              </li>
+              <li class="nav-item" data-view="projects">
+                <i class="fa-solid fa-folder-tree"></i> <span>Projects</span>
+              </li>
+              <li class="nav-item" data-view="certificates">
+                <i class="fa-solid fa-award"></i> <span>Certificates</span>
+              </li>
+              <li class="nav-item highlight-ai" data-view="aicoach">
+                <i class="fa-solid fa-robot"></i> <span>AI Career Coach</span>
+                <span class="menu-badge ai">AI</span>
+              </li>
+              <li class="nav-item" data-view="communities">
+                <i class="fa-solid fa-users"></i> <span>Communities</span>
+              </li>
+              <li class="nav-item" data-view="messages">
+                <i class="fa-solid fa-comments"></i> <span>Messages</span>
+              </li>
+              <li class="nav-item" data-view="liveevents">
+                <i class="fa-solid fa-video"></i> <span>Live Events</span>
+                <span class="menu-badge live">LIVE</span>
+              </li>
+              <li class="nav-item" data-view="calendar">
+                <i class="fa-solid fa-calendar-alt"></i> <span>Calendar</span>
+              </li>
+              <li class="nav-item" data-view="analytics">
+                <i class="fa-solid fa-chart-pie"></i> <span>Analytics</span>
+              </li>
+              <li class="nav-item" data-view="saved">
+                <i class="fa-solid fa-heart"></i> <span>Saved</span>
+              </li>
+              <li class="nav-item" data-view="settings">
+                <i class="fa-solid fa-gear"></i> <span>Settings</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="sidebar-footer">
+            <div class="ai-power-pill">
+              <i class="fa-solid fa-bolt text-cyan"></i>
+              <span>ProX Neural Engine v4.2</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- DASHBOARD CENTRAL VIEWPORT -->
+        <main class="dashboard-viewport" id="dashboard-viewport">
+          
+          <!-- VIEW 1: DASHBOARD (DEFAULT) -->
+          <div class="view-content active" id="view-dashboard">
+            <!-- HERO SECTION -->
+            <section class="hero-section glass-card">
+              <div class="hero-content">
+                <div class="hero-badge">
+                  <span class="pulse-ring"></span>
+                  <i class="fa-solid fa-shield-halved"></i> Stanford CS Class of 2026 • Verified Innovator
+                </div>
+                <h1 class="hero-title">Welcome back, <span class="text-gradient" id="user-display-name">Alex 👋</span></h1>
+                <p class="hero-subtitle">
+                  Discover opportunities, connect with innovators, build amazing projects, and accelerate your career.
+                </p>
+                
+                <div class="hero-stats-row">
+                  <div class="hero-mini-stat">
+                    <span class="stat-num text-cyan">98.4</span>
+                    <span class="stat-lbl">Reputation Score</span>
+                  </div>
+                  <div class="hero-divider"></div>
+                  <div class="hero-mini-stat">
+                    <span class="stat-num text-purple">Top 1%</span>
+                    <span class="stat-lbl">Global Ranking</span>
+                  </div>
+                  <div class="hero-divider"></div>
+                  <div class="hero-mini-stat">
+                    <span class="stat-num text-emerald">42 Days</span>
+                    <span class="stat-lbl">Streak 🔥</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- HERO RIGHT 3D AI ILLUSTRATION -->
+              <div class="hero-3d-visual">
+                <img src="./prox_hero_3d.jpg" alt="ProX 3D AI Ecosystem" class="hero-3d-img" />
+                <div class="floating-orbit-icons">
+                  <div class="orbit-icon orb-1" title="AI Neural Engine"><i class="fa-solid fa-brain"></i></div>
+                  <div class="orbit-icon orb-2" title="Graduation Cap"><i class="fa-solid fa-graduation-cap"></i></div>
+                  <div class="orbit-icon orb-3" title="Briefcase Jobs"><i class="fa-solid fa-briefcase"></i></div>
+                  <div class="orbit-icon orb-4" title="GitHub Open Source"><i class="fa-brands fa-github"></i></div>
+                  <div class="orbit-icon orb-5" title="Global Network"><i class="fa-solid fa-network-wired"></i></div>
+                  <div class="orbit-icon orb-6" title="Hackathon Trophy"><i class="fa-solid fa-trophy"></i></div>
+                  <div class="orbit-icon orb-7" title="Rocket Innovation"><i class="fa-solid fa-rocket"></i></div>
+                  <div class="orbit-icon orb-8" title="Global Ecosystem"><i class="fa-solid fa-earth-americas"></i></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- QUICK ACTION CARDS -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-bolt text-yellow"></i> Quick Actions</h3>
+                <span class="section-subtitle">Instant access to ecosystem tools</span>
+              </div>
+              <div class="quick-actions-grid">
+                <button class="quick-action-card qa-blue" data-action="hackathons">
+                  <div class="qa-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                  <div class="qa-text"><strong>Find Hackathons</strong><span>28 Trending</span></div>
+                </button>
+                <button class="quick-action-card qa-purple" data-action="internships">
+                  <div class="qa-icon"><i class="fa-solid fa-briefcase"></i></div>
+                  <div class="qa-text"><strong>Find Internships</strong><span>140+ AI Roles</span></div>
+                </button>
+                <button class="quick-action-card qa-emerald" data-action="jobs">
+                  <div class="qa-icon"><i class="fa-solid fa-building"></i></div>
+                  <div class="qa-text"><strong>Find Jobs</strong><span>Graduate & Remote</span></div>
+                </button>
+                <button class="quick-action-card qa-cyan" data-action="colleges">
+                  <div class="qa-icon"><i class="fa-solid fa-university"></i></div>
+                  <div class="qa-text"><strong>Explore Colleges</strong><span>Top Universities</span></div>
+                </button>
+                <button class="quick-action-card qa-pink" data-action="teammates">
+                  <div class="qa-icon"><i class="fa-solid fa-user-plus"></i></div>
+                  <div class="qa-text"><strong>Find Teammates</strong><span>Hackathon Teams</span></div>
+                </button>
+                <button class="quick-action-card qa-indigo" data-action="learning">
+                  <div class="qa-icon"><i class="fa-solid fa-book-open"></i></div>
+                  <div class="qa-text"><strong>Continue Learning</strong><span>ML & Systems</span></div>
+                </button>
+                <button class="quick-action-card qa-amber" data-action="aicoach">
+                  <div class="qa-icon"><i class="fa-solid fa-robot"></i></div>
+                  <div class="qa-text"><strong>Ask AI Coach</strong><span>Career AI Advisor</span></div>
+                </button>
+                <button class="quick-action-card qa-teal" data-action="uploadproject">
+                  <div class="qa-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                  <div class="qa-text"><strong>Upload Project</strong><span>Showcase Code</span></div>
+                </button>
+                <button class="quick-action-card qa-rose" data-action="uploadcert">
+                  <div class="qa-icon"><i class="fa-solid fa-certificate"></i></div>
+                  <div class="qa-text"><strong>Upload Certificate</strong><span>Verify Skill Badges</span></div>
+                </button>
+              </div>
+            </section>
+
+            <!-- KPI CARDS -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-chart-line text-cyan"></i> Ecosystem Performance & Analytics</h3>
+                <span class="section-subtitle">Real-time metrics & career metrics</span>
+              </div>
+              <div class="kpi-grid" id="kpi-cards-container"></div>
+            </section>
+
+            <!-- AI RECOMMENDATIONS -->
+            <section class="section-block">
+              <div class="section-header">
+                <div class="header-with-badge">
+                  <h3><i class="fa-solid fa-sparkles text-purple"></i> AI-Powered Personalized Recommendations</h3>
+                  <span class="ai-tag"><i class="fa-solid fa-brain"></i> ProX AI Match 95%+</span>
+                </div>
+              </div>
+              <div class="ai-recs-grid" id="ai-recs-container"></div>
+            </section>
+
+            <!-- MAP & EVENTS -->
+            <div class="two-col-grid">
+              <section class="glass-card map-section-card">
+                <div class="card-header">
+                  <div class="title-with-icon">
+                    <i class="fa-solid fa-location-dot text-emerald"></i>
+                    <div>
+                      <h3>Nearby Opportunities Map</h3>
+                      <p>Silicon Valley & SF Ecosystem Nodes</p>
+                    </div>
+                  </div>
+                  <div class="map-filters">
+                    <button class="map-filter-btn active" data-type="all">All</button>
+                    <button class="map-filter-btn" data-type="Hackathon">Hackathons</button>
+                    <button class="map-filter-btn" data-type="Jobs">Jobs</button>
+                    <button class="map-filter-btn" data-type="Research Labs">Labs</button>
+                  </div>
+                </div>
+                <div class="map-container-wrapper">
+                  <div id="nearby-map"></div>
+                  <div class="map-overlay-info">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>6 Active Nearby Events within 15 miles</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="glass-card events-section-card">
+                <div class="card-header">
+                  <div class="title-with-icon">
+                    <i class="fa-solid fa-calendar-check text-pink"></i>
+                    <div>
+                      <h3>Upcoming Global Events</h3>
+                      <p>Keynotes, Summits & Workshops</p>
+                    </div>
+                  </div>
+                  <span class="badge-live-pulse"><i class="fa-solid fa-circle"></i> Live Schedule</span>
+                </div>
+                <div class="events-timeline" id="events-timeline-container"></div>
+              </section>
+            </div>
+
+            <!-- AI CAREER COACH HERO WIDGET -->
+            <section class="glass-card ai-coach-hero-widget">
+              <div class="coach-widget-left">
+                <div class="robot-avatar-wrapper">
+                  <div class="robot-glow-ring"></div>
+                  <i class="fa-solid fa-robot robot-icon"></i>
+                </div>
+                <div class="coach-speech-bubble">
+                  <div class="bubble-header">
+                    <strong>ProX Coach Bot</strong>
+                    <span class="ai-status"><i class="fa-solid fa-circle text-emerald"></i> Active & Synthesizing</span>
+                  </div>
+                  <p class="bubble-text">
+                    "Hi Alex! I analyzed 1,400+ top tech postings. I found <strong>12 internships matching 95%+</strong> of your PyTorch & Agentic profile, plus <strong>4 hackathons</strong> happening near Stanford this week!"
+                  </p>
+                </div>
+              </div>
+              <div class="coach-widget-actions">
+                <button class="coach-btn primary-btn" id="btn-coach-ask"><i class="fa-solid fa-comment-dots"></i> Ask AI Coach</button>
+                <button class="coach-btn secondary-btn" id="btn-coach-voice"><i class="fa-solid fa-microphone text-cyan"></i> Voice Chat</button>
+                <button class="coach-btn secondary-btn" id="btn-coach-resume"><i class="fa-solid fa-file-invoice text-purple"></i> Generate Resume</button>
+                <button class="coach-btn secondary-btn" id="btn-coach-interview"><i class="fa-solid fa-user-ninja text-emerald"></i> Interview Practice</button>
+              </div>
+            </section>
+
+            <!-- STUDENT PORTFOLIO SUITE -->
+            <section class="glass-card portfolio-widget-suite">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <i class="fa-brands fa-github text-cyan"></i>
+                  <div>
+                    <h3>Alex Rivera's Unified Student Portfolio</h3>
+                    <p>Verified GitHub, LeetCode, Skills, ATS & Diagnostics</p>
+                  </div>
+                </div>
+                <div class="portfolio-score-pill">
+                  <span class="lbl">Portfolio Score</span>
+                  <span class="val">94/100</span>
+                </div>
+              </div>
+              <div class="portfolio-grid">
+                <div class="port-sub-card">
+                  <div class="sub-card-title"><i class="fa-brands fa-github text-emerald"></i><span>GitHub Contributions (1,840 commits)</span></div>
+                  <div class="github-heatmap-grid" id="github-heatmap-container"></div>
+                  <div class="heatmap-footer"><span>🔥 42 Day Streak</span><span>Max: 28 commits/day</span></div>
+                </div>
+                <div class="port-sub-card">
+                  <div class="sub-card-title"><i class="fa-solid fa-code text-yellow"></i><span>LeetCode Diagnostic Rating</span></div>
+                  <div class="leetcode-stats">
+                    <div class="lc-circle"><span class="lc-rating">2,185</span><span class="lc-badge">Guardian</span></div>
+                    <div class="lc-breakdown">
+                      <div class="lc-row"><span>Easy</span> <strong class="text-emerald">210 / 210</strong></div>
+                      <div class="lc-row"><span>Medium</span> <strong class="text-yellow">340 / 400</strong></div>
+                      <div class="lc-row"><span>Hard</span> <strong class="text-pink">92 / 150</strong></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="port-sub-card">
+                  <div class="sub-card-title"><i class="fa-solid fa-shield-check text-purple"></i><span>ATS & Diagnostics</span></div>
+                  <div class="ats-metrics">
+                    <div class="ats-bar-item"><div class="ats-lbl"><span>ATS Compatibility</span> <strong>92%</strong></div><div class="progress-track"><div class="progress-fill bg-purple" style="width: 92%"></div></div></div>
+                    <div class="ats-bar-item"><div class="ats-lbl"><span>Resume Strength</span> <strong>96%</strong></div><div class="progress-track"><div class="progress-fill bg-cyan" style="width: 96%"></div></div></div>
+                    <div class="ats-bar-item"><div class="ats-lbl"><span>Code Quality Rating</span> <strong>98%</strong></div><div class="progress-track"><div class="progress-fill bg-emerald" style="width: 98%"></div></div></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- COMMUNITY FEED -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-newspaper text-purple"></i> Global Innovators Community Feed</h3>
+              </div>
+              <div class="glass-card create-post-card">
+                <div class="create-post-top">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80" alt="Alex" class="user-avatar" />
+                  <input type="text" id="new-post-input" placeholder="Share a hackathon win, project demo, paper or milestone with 250k+ students..." />
+                </div>
+                <div class="create-post-actions">
+                  <button class="post-act-btn"><i class="fa-solid fa-award text-yellow"></i> Certificate</button>
+                  <button class="post-act-btn"><i class="fa-solid fa-trophy text-purple"></i> Win</button>
+                  <button class="post-act-btn"><i class="fa-solid fa-file-code text-cyan"></i> Project</button>
+                  <button class="post-act-btn"><i class="fa-solid fa-file-lines text-pink"></i> Paper</button>
+                  <button class="submit-post-btn" id="btn-submit-post">Publish Post <i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+              </div>
+              <div class="community-posts-list" id="community-posts-container"></div>
+            </section>
+
+            <!-- LEARNING SECTION -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-graduation-cap text-cyan"></i> Continue Learning & Skill Mastery</h3>
+              </div>
+              <div class="courses-grid" id="courses-container"></div>
+            </section>
+
+            <!-- HACKATHONS SECTION -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-trophy text-yellow"></i> Trending Global Hackathons</h3>
+              </div>
+              <div class="hackathons-grid" id="hackathons-container"></div>
+            </section>
+
+            <!-- INTERNSHIPS & JOBS -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-briefcase text-emerald"></i> Top Tier Tech Internships & Roles</h3>
+              </div>
+              <div class="internships-grid" id="internships-container"></div>
+            </section>
+
+            <!-- LIVE EVENTS -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-video text-pink"></i> Currently Live Streams & Tech Talks</h3>
+              </div>
+              <div class="live-events-grid" id="live-events-container"></div>
+            </section>
+
+            <!-- COMMUNITIES HUB -->
+            <section class="section-block">
+              <div class="section-header">
+                <h3><i class="fa-solid fa-users text-purple"></i> Global Student Communities</h3>
+              </div>
+              <div class="communities-grid" id="communities-container"></div>
+            </section>
+
+            <!-- TRENDING COMPANIES -->
+            <section class="glass-card trending-companies-card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-building-flag text-cyan"></i> Featured Top Hiring Tech Giants</h3>
+              </div>
+              <div class="companies-grid" id="companies-container"></div>
+            </section>
+          </div>
+
+          <!-- OTHER VIEWS (Rendered dynamically) -->
+          <div class="view-content" id="view-discover">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-globe text-cyan"></i> Discover Global Student Ecosystem</h2>
+              <p>Explore thousands of open-source projects, research preprints, student startups, and innovative repositories worldwide.</p>
+              <div class="discover-filter-bar">
+                <button class="map-filter-btn active">All Artifacts</button>
+                <button class="map-filter-btn">AI & Agents</button>
+                <button class="map-filter-btn">Web3 & Crypto</button>
+                <button class="map-filter-btn">BioTech</button>
+                <button class="map-filter-btn">Robotics</button>
+              </div>
+            </div>
+            <div class="grid-layout-3col" id="discover-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-opportunities">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-bullseye text-purple"></i> All Opportunities Feed</h2>
+              <p>Unified feed of internships, research fellowships, startup grants, and hackathon challenges.</p>
+            </div>
+            <div class="grid-layout-2col" id="opportunities-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-hackathons">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-trophy text-yellow"></i> Devpost & ProX Global Hackathons Hub</h2>
+              <p>Find teammates, register for high-prize hackathons, submit projects, and compete for $1M+ in prizes.</p>
+            </div>
+            <div class="grid-layout-2col" id="hackathons-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-internships">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-briefcase text-emerald"></i> Verified Tech Internships Portal</h2>
+              <p>AI-matched internships at Google, OpenAI, Microsoft, NVIDIA, Meta, Apple, and Tesla with instant 1-click ATS application.</p>
+            </div>
+            <div class="grid-layout-2col" id="internships-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-jobs">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-building text-blue"></i> Full-Time Graduate & Remote Jobs</h2>
+              <p>Entry-level software engineer, AI researcher, and product engineering positions for 2026 graduates.</p>
+            </div>
+            <div class="grid-layout-2col" id="jobs-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-colleges">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-graduation-cap text-cyan"></i> Global Universities & Colleges Network</h2>
+              <p>Connect with student chapters, research labs, and incubator funds across top global institutions.</p>
+            </div>
+            <div class="grid-layout-3col" id="colleges-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-learning">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-book-open-reader text-purple"></i> Coursera & ProX Learning Academy</h2>
+              <p>Master AI agents, Next.js 15, system design, cloud architecture, and cybersecurity with verified certificates.</p>
+            </div>
+            <div class="grid-layout-2col" id="learning-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-projects">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-folder-tree text-emerald"></i> Alex Rivera's Project Showcase</h2>
+              <p>Portfolio of 12 full-stack & AI projects with live GitHub stats, star counts, and recruiter view badges.</p>
+            </div>
+            <div class="grid-layout-2col" id="projects-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-certificates">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-award text-yellow"></i> Verified Certificates & Digital Badges</h2>
+              <p>Blockchain-verified credentials from Stanford, Coursera, AWS, and Google Cloud with instant LinkedIn share.</p>
+            </div>
+            <div class="grid-layout-3col" id="certificates-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-aicoach">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-robot text-pink"></i> ProX AI Career Coach & Diagnostic Studio</h2>
+              <p>AI-powered career mentor trained on 10M+ tech resumes, technical interview questions, and salary negotiation databases.</p>
+            </div>
+            <div class="aicoach-full-studio" id="aicoach-full-studio"></div>
+          </div>
+
+          <div class="view-content" id="view-communities">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-users text-purple"></i> Discord-Style Student Communities</h2>
+              <p>Join 250k+ student developers in real-time chat channels, code review rooms, and study groups.</p>
+            </div>
+            <div class="grid-layout-2col" id="communities-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-messages">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-comments text-cyan"></i> Messages & Recruiter Direct Inbox</h2>
+              <p>Direct communication channels with tech recruiters, Stanford mentors, and hackathon teammates.</p>
+            </div>
+            <div class="messages-chat-app" id="messages-chat-app"></div>
+          </div>
+
+          <div class="view-content" id="view-liveevents">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-video text-pink"></i> Live Streaming Auditorium & Webinars</h2>
+              <p>Watch live coding streams, professor lectures, startup pitch battles, and global keynotes in real-time.</p>
+            </div>
+            <div class="grid-layout-2col" id="liveevents-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-calendar">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-calendar-alt text-yellow"></i> Global Ecosystem Schedule & Deadlines</h2>
+              <p>Integrated schedule tracking hackathon submission deadlines, technical interviews, and keynote events.</p>
+            </div>
+            <div class="calendar-full-view" id="calendar-full-view"></div>
+          </div>
+
+          <div class="view-content" id="view-analytics">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-chart-pie text-cyan"></i> Personal Career Analytics & Recruiter Visibility</h2>
+              <p>Real-time telemetry on recruiter search appearances, profile views, skill scores, and application conversion rates.</p>
+            </div>
+            <div class="grid-layout-2col" id="analytics-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-saved">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-heart text-rose"></i> Saved Opportunities & Bookmarks</h2>
+              <p>Your curated collection of bookmarked hackathons, job postings, courses, and community posts.</p>
+            </div>
+            <div class="grid-layout-2col" id="saved-full-grid"></div>
+          </div>
+
+          <div class="view-content" id="view-settings">
+            <div class="glass-card page-header-card">
+              <h2><i class="fa-solid fa-gear text-muted"></i> Account Preferences & ProX Engine Settings</h2>
+              <p>Manage your profile details, notification preferences, AI match thresholds, and linked GitHub/LeetCode accounts.</p>
+            </div>
+            <div class="settings-full-form" id="settings-full-form"></div>
+          </div>
+
+        </main>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="right-sidebar">
+          <div class="glass-card profile-card">
+            <div class="profile-card-header">
+              <div class="avatar-container">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80" alt="Alex" class="profile-lg-avatar" id="sidebar-user-avatar" />
+                <span class="level-badge">Lvl 14</span>
+              </div>
+              <div class="profile-meta">
+                <h4 id="sidebar-user-name">Alex Rivera</h4>
+                <p id="sidebar-user-email">Stanford CS '26</p>
+                <span class="rank-tag"><i class="fa-solid fa-trophy text-yellow"></i> Rank #3 Global</span>
+              </div>
+            </div>
+            <div class="xp-progress-block">
+              <div class="xp-labels">
+                <span>XP: 14,250 / 18,000</span>
+                <span>79% to Lvl 15</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill bg-gradient-purple" style="width: 79%"></div></div>
+            </div>
+            <div class="profile-stats-grid">
+              <div class="p-stat"><span class="p-val">92%</span><span class="p-lbl">Profile Completion</span></div>
+              <div class="p-stat"><span class="p-val">98.4</span><span class="p-lbl">Reputation</span></div>
+            </div>
+          </div>
+
+          <div class="glass-card tasks-card">
+            <div class="card-header">
+              <h4><i class="fa-solid fa-list-check text-cyan"></i> Today's Checklist</h4>
+              <span class="badge-counter">3/5 Done</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item completed"><input type="checkbox" checked id="t1" /><label for="t1">Apply for Google AI Internship</label></li>
+              <li class="task-item completed"><input type="checkbox" checked id="t2" /><label for="t2">Solve LeetCode Daily Challenge</label></li>
+              <li class="task-item completed"><input type="checkbox" checked id="t3" /><label for="t3">Review Hackathon Team Invites</label></li>
+              <li class="task-item"><input type="checkbox" id="t4" /><label for="t4">Submit NeurIPS Paper Revisions</label></li>
+              <li class="task-item"><input type="checkbox" id="t5" /><label for="t5">Complete System Design Module 8</label></li>
+            </ul>
+          </div>
+
+          <div class="glass-card mini-calendar-card">
+            <div class="card-header">
+              <h4><i class="fa-solid fa-calendar-days text-purple"></i> Schedule & Deadlines</h4>
+              <span class="curr-date">July 2026</span>
+            </div>
+            <div class="mini-cal-dates">
+              <div class="cal-day"><span>M</span><strong>24</strong></div>
+              <div class="cal-day active"><span>T</span><strong>25</strong></div>
+              <div class="cal-day has-event"><span>W</span><strong>26</strong></div>
+              <div class="cal-day"><span>T</span><strong>27</strong></div>
+              <div class="cal-day"><span>F</span><strong>28</strong></div>
+              <div class="cal-day has-event"><span>S</span><strong>29</strong></div>
+              <div class="cal-day"><span>S</span><strong>30</strong></div>
+            </div>
+          </div>
+
+          <div class="glass-card weather-card">
+            <div class="weather-content">
+              <div class="weather-icon"><i class="fa-solid fa-sun text-yellow"></i></div>
+              <div class="weather-info">
+                <strong>74°F / 23°C • Clear</strong>
+                <span>Stanford University Campus, CA</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card ai-tip-card">
+            <div class="ai-tip-header">
+              <i class="fa-solid fa-lightbulb text-yellow"></i>
+              <strong>AI Tip of the Day</strong>
+            </div>
+            <p>
+              "Students who link verified GitHub commits to their ProX One profile receive <strong>3.4x more recruiter messages</strong> from top AI labs!"
+            </p>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+    <!-- FLOATING AI ASSISTANT ORB -->
+    <div class="floating-ai-orb" id="floating-ai-orb" title="Click to chat with ProX AI Coach">
+      <div class="orb-pulse-ring"></div>
+      <div class="orb-inner shadow-glow"><i class="fa-solid fa-robot"></i></div>
+      <span class="orb-tooltip">AI Coach Online</span>
+    </div>
+
+    <!-- MODAL: FIREBASE AUTHENTICATION (SIGN IN / SIGN UP) -->
+    <div class="modal-backdrop" id="auth-modal">
+      <div class="modal-container auth-modal-container glass-card">
+        <div class="modal-header">
+          <div class="title-with-icon">
+            <div class="logo-icon-glow" style="width:32px; height:32px; font-size:16px;">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+              <h3>ProX Firebase Authentication</h3>
+              <p>Secure Identity & Single Sign-On for Students</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btn-close-auth"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body auth-modal-body" style="padding:24px;">
+          <!-- Google Sign In Button -->
+          <button class="google-auth-btn" id="btn-google-signin">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:20px; height:20px;" />
+            <span>Continue with Google Single Sign-On</span>
+          </button>
+
+          <div class="auth-divider">
+            <span>OR EMAIL SIGN IN</span>
+          </div>
+
+          <!-- Email/Password Auth Form -->
+          <form id="auth-form" onsubmit="return false;" style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-dim); font-weight:bold;">Email Address</label>
+              <input type="email" id="auth-email-input" placeholder="alex.rivera@stanford.edu" required style="width:100%; background:rgba(30,41,59,0.6); border:1px solid var(--border-glass); padding:10px 14px; border-radius:12px; color:#fff; outline:none; font-size:13px; margin-top:4px;" />
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-dim); font-weight:bold;">Password</label>
+              <input type="password" id="auth-password-input" placeholder="••••••••••••" required style="width:100%; background:rgba(30,41,59,0.6); border:1px solid var(--border-glass); padding:10px 14px; border-radius:12px; color:#fff; outline:none; font-size:13px; margin-top:4px;" />
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:6px;">
+              <button class="rec-apply-btn" id="btn-submit-signin">Sign In <i class="fa-solid fa-right-to-bracket"></i></button>
+              <button class="coach-btn secondary-btn" id="btn-submit-signup" style="flex:1; justify-content:center;">Create Account</button>
+            </div>
+          </form>
+
+          <div style="margin-top:18px; text-align:center; border-top:1px solid var(--border-glass); padding-top:14px;">
+            <button class="demo-login-btn" id="btn-demo-auth" style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:var(--neon-emerald); padding:8px 16px; border-radius:14px; font-size:12px; font-weight:bold; cursor:pointer;">
+              ⚡ Quick Authenticate as Alex Rivera (Stanford CS '26)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: GLOBAL SEARCH (Cmd/Ctrl + K) -->
+    <div class="modal-backdrop" id="search-modal">
+      <div class="modal-container search-modal-container glass-card">
+        <div class="modal-header">
+          <div class="search-modal-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-modal-icon"></i>
+            <input type="text" id="modal-search-input" placeholder="Type to search hackathons, jobs, internships, courses, members..." autofocus />
+            <button class="modal-close-btn" id="btn-close-search"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="modal-body search-results-body" id="modal-search-results">
+          <div class="search-placeholder-text">
+            <p>Try searching: <code>"Google AI"</code>, <code>"HackMIT"</code>, <code>"PyTorch"</code>, <code>"Remote Jobs"</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: AI COACH INTERACTIVE CHAT -->
+    <div class="modal-backdrop" id="aicoach-modal">
+      <div class="modal-container coach-modal-container glass-card">
+        <div class="modal-header">
+          <div class="title-with-icon">
+            <div class="robot-sm-avatar"><i class="fa-solid fa-robot"></i></div>
+            <div>
+              <h3>ProX Neural AI Career Assistant</h3>
+              <p>Trained on 10M+ tech resumes, interview questions & hackathon submissions</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btn-close-coach"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body coach-modal-body">
+          <div class="chat-messages-container" id="coach-messages-box">
+            <div class="coach-msg system">
+              <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+              <div class="msg-bubble">
+                Hello Alex! I'm your ProX AI Career Coach. How can I assist your career journey today?
+                <div class="coach-quick-prompts">
+                  <button class="prompt-chip" data-prompt="Analyze my ATS Resume Score">📊 Analyze ATS Score</button>
+                  <button class="prompt-chip" data-prompt="Find top 5 Remote AI Internships">💼 Remote AI Internships</button>
+                  <button class="prompt-chip" data-prompt="Practice a 5-minute System Design Interview">🎯 Mock Interview Practice</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="coach-input-field" placeholder="Ask AI Coach anything (e.g. 'How to negotiate salary for Google internship?')..." />
+            <button class="coach-voice-btn" id="btn-coach-modal-voice" title="Voice Input"><i class="fa-solid fa-microphone"></i></button>
+            <button class="coach-send-btn" id="btn-coach-send">Send <i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: QUICK ADD (+) MENU -->
+    <div class="modal-backdrop" id="quickadd-modal">
+      <div class="modal-container quickadd-modal-container glass-card">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-plus-circle text-cyan"></i> ProX One Quick Add Menu</h3>
+          <button class="modal-close-btn" id="btn-close-quickadd"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body quickadd-grid">
+          <button class="qa-item-btn" id="qa-btn-project"><i class="fa-solid fa-folder-plus text-purple"></i><span>Add New Project</span></button>
+          <button class="qa-item-btn" id="qa-btn-cert"><i class="fa-solid fa-certificate text-yellow"></i><span>Upload Verified Certificate</span></button>
+          <button class="qa-item-btn" id="qa-btn-post"><i class="fa-solid fa-paper-plane text-cyan"></i><span>Create Feed Post</span></button>
+          <button class="qa-item-btn" id="qa-btn-event"><i class="fa-solid fa-calendar-plus text-pink"></i><span>Schedule Campus Event</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+  </body>
+</html>
